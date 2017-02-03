@@ -1,0 +1,36 @@
+{
+  "name": "2key-ratchet",
+  "version": "1.0.0",
+  "description": "`2key-ratchet` is an implementation of a Double Ratchet protocol and X3DH in TypeScript utilizing WebCrypto.",
+  "main": "out/classes/index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "mocha out/test",
+    "build": "npm run build:es5",
+    "build:es5": "tsc",
+    "build:map": "tsc --sourceMap",
+    "pub": "npm version patch && npm publish && git push",
+    "sync": "git ac && git pull --rebase && git push",
+    "precoverage": "npm run build:map",
+    "coverage": "nyc npm test",
+    "precoveragehtml": "npm run coverage",
+    "coveragehtml": "nyc report -r html",
+    "watch": "watch 'npm run coveragehtml' lib/ src/ test/",
+    "live": "live-server -q --port=4005 --ignorePattern='(js|css|png)$' coverage",
+    "predev": "if [ ! -f coverage/index.html ]; then mkdir coverage; cp .waiting.html coverage/index.html; fi",
+    "dev": "npm-run-all -p --silent watch live",
+    "coveralls": "nyc report --reporter=text-lcov | coveralls"
+  },
+  "keywords": [],
+    "author": "PeculiarVentures",
+  "contributors": [
+    "Miroshin Stepan<microshine@mail.ru>"
+  ],
+  "license": "",
+  "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "chai": "^3.5.0",
+    "protobufjs": "^6.6.3",
+    "tslib": "^1.5.0"
+  }
+}

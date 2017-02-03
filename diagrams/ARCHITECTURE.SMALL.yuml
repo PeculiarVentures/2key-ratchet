@@ -1,0 +1,59 @@
+// {type:class}
+// {direction:topDown}
+
+// crypto
+[ECPublicKey]
+[ECKeyPair]
+[Curve]
+[Secret]
+
+[note: @ProtobufElement - decorator describes Protobuf Type]
+[note: @ProtobufProperty - decorator describes Protobuf Field]
+
+// protocol
+[ProtocolObject]
+[BaseProtocol]
+
+[ProtocolObject]^[BaseProtocol]
+[BaseProtocol]^[IdentityProtocol]
+[BaseProtocol]^[MessageProtocol]
+[BaseProtocol]^[MessageSignedProtocol]
+[MessageSignedProtocol]<-[MessageProtocol]
+[BaseProtocol]^[PreKeyMessageProtocol]
+[BaseProtocol]^[PreKeyProtocol]
+[PreKeyProtocol]^[PreKeySignedProtocol]
+[BaseProtocol]^[PreKeyBundleProtocol]
+[PreKeyBundleProtocol]->[PreKeyProtocol]
+[PreKeyBundleProtocol]->[PreKeySignedProtocol]
+
+// data
+[Address]
+[Identity]
+[PreKey]
+[RemoteIdentity]
+
+// utils
+[note: BufferSource = ArrayBuffer | ArrayBufferView (Uint8Array, Uint16Array, etc.)]
+[Convert]
+
+// base
+[Stack<T>]
+[AssocStorage<T>]
+[AssocStorage<T>]^[IdentityStorage]
+
+// base
+[AsymmetricRatchet]
+[DHRatchetStep]
+[DHRatchetStepStack]
+[Stack<T>]^[DHRatchetStepStack]
+[DHRatchetStepStack]-[DHRatchetStep]
+[DHRatchetStepStack]-[AsymmetricRatchet]
+[CipherMessage]
+[SymmetricRatchet]
+[SymmetricRatchet]^[SendingRatchet]
+[SendingRatchet]
+[ReceivingRatchet]
+[SymmetricRatchet]^[ReceivingRatchet]
+[AsymmetricRatchet]->[SendingRatchet]
+[AsymmetricRatchet]->[ReceivingRatchet]
+[AsymmetricRatchet]->[Identity]

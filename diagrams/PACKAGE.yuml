@@ -1,0 +1,12 @@
+// {type:package}
+[note:Packages with 'grey' background are external{bg:lightyellow}]
+[crypto]->[WebCrypto{bg:gray}]
+[2key-ratchet]-[classes]
+[2key-ratchet]-[tests]
+[2key-ratchet]-[examples]
+[classes]->[crypto]
+[classes]->[data]
+[classes]->[protocol]
+[classes]->[utils]
+[protocol]->[parser]
+[parser]->[protobufjs{bg:gray}]

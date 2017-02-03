@@ -1,0 +1,67 @@
+// {type:class}
+// {direction:topDown}
+[note:* - array type (e.g. string*, number*)]
+
+// crypto
+[ECPublicKey|id:string;key:CryptoKey;|thumbprint():ArrayBuffer;isEqual(other:any):boolean;serialize():ArrayBuffer;]
+[ECKeyPair|privateKey:CryptoKey;publicKey:ECPublicKey;]<-[ECPublicKey]
+[Curve|NAMED_CURVE;DIGEST_ALGORITHM;|generateKeyPair(type:string):ECKeyPair;deriveBytes(privateKey:ECPrivateKey,publicKey:ECPublicKey):ArrayBuffer;verify(signingKey:ECPublicKey,message:ArrayBuffer,signature:ArrayBuffer):boolean;sign(signingKey:ECPrivateKey,message:ArrayBuffer):ArrayBuffer;]
+[Secret|subtle:CryptoSubtle;|randomBytes(size:number):ArrayBuffer;digest(alg:string,message:ArrayBuffer):ArrayBuffer;encrypt(key:CryptoKey,data:ArrayBuffer,iv:ArrayBuffer):ArrayBuffer;decrypt(key:CryptoKey,data:ArrayBuffer,iv:ArrayBuffer):ArrayBuffer;importHMAC(raw:ArrayBuffer):CryptoKey;importAES(raw:ArrayBuffer):CryptoKey;sign(key:CryptoKey,data:ArrayBuffer):ArrayBuffer;HKDF(IKM: ArrayBuffer,keysCount:number,salt?:HMACCryptoKey,info?:ArrayBuffer):ArrayBuffer*;]
+
+[note: @ProtobufElement - decorator describes Protobuf Type]
+[note: @ProtobufProperty - decorator describes Protobuf Field]
+
+// protocol
+[ProtocolObject|importProtocol(raw:ArrayBuffer);exportProtocol():ArrayBuffer;]
+[BaseProtocol|version:number]
+
+[ProtocolObject]^[BaseProtocol]
+[IdentityProtocol|signingKey:ECPublicKey;exchangeKey:ECPublicKey;signature:ArrayBuffer;|sign(key:CryptoKey);verify():boolean;]
+[BaseProtocol]^[IdentityProtocol]
+[MessageProtocol|senderRatchetKey:ECPublicKey;counter:number;previousCounter:number;ciphertext:ArrayBuffer;]
+[BaseProtocol]^[MessageProtocol]
+[MessageSignedProtocol|receiverKey:ECPublicKey;senderKey:ECPublicKey;message:MessageProtocol;-signature:ArrayBuffer;|sign(macKey:CryptoKey);verify(macKey:CryptoKey):boolean;]
+[BaseProtocol]^[MessageSignedProtocol]
+[MessageSignedProtocol]<-[MessageProtocol]
+[PreKeyMessageProtocol|registrationId:number;preKeyId:number;preKeySignedId:number;baseKey:ECPublicKey;identity:IdentityProtocol;message:MessageSignedProtocol;]
+[BaseProtocol]^[PreKeyMessageProtocol]
+[PreKeyProtocol|id:number;key:ECPublicKey]
+[BaseProtocol]^[PreKeyProtocol]
+[PreKeySignedProtocol|signature:ArrayBuffer|sign(key:CryptoKey);verify(key:ECPublicKey):boolean]
+[PreKeyProtocol]^[PreKeySignedProtocol]
+[PreKeyBundleProtocol|registrationId:number;identity:IdentityProtocol;preKey:PreKeyProtocol;preKeySigned:PreKeySignedProtocol;]
+[BaseProtocol]^[PreKeyBundleProtocol]
+[PreKeyBundleProtocol]->[PreKeyProtocol]
+[PreKeyBundleProtocol]->[PreKeySignedProtocol]
+
+// data
+[Address|id:number;name:string;|toString():string]
+[Identity|id:number;signingKey:ECKeyPair;exchangeKey:ECKeyPair;preKeys:PreKeyStorage;signedPreKey:Storage;|#create(id:number):Identity]
+[PreKey|id:number;key:ECKeyPair;|#create():PreKey;]
+[RemoteIdentity|id:number;signingKey:ECPublicKey;echangeKey:ECPublicKey;signature:ArrayBuffer;|#fill(protocol:IdentityProtocol):PreKey;fill(protocol:IdentityProtocol);verify():boolean;]
+
+// utils
+[note: BufferSource = ArrayBuffer | ArrayBufferView (Uint8Array, Uint16Array, etc.)]
+[Convert|ToString(buffer:BufferSource,enc?:string):string;FromString(str:string;enc?:string):ArrayBuffer;ToHex(value:BufferSource):string;FromHex(value:string):ArrayBuffer;ToBase64(value:BufferSource):string;FromBase64(value:string):ArrayBuffer;ToBase64Url(value:BufferSource):string;FromBase64Url(value:string):ArrayBuffer;ToBinary(value:BufferSource):string;FromBinary(value:string):ArrayBuffer;ToUtf8String(value:BufferSource):string;FromUtf8String(value:string):ArrayBuffer;]
+
+// base
+[Stack<T>|legth:number;latest:T|push(item:T);]
+[AssocStorage<T>|length:number;|save(key:string;value:T);load(key:string):T;remove(key:string);clear();]
+[AssocStorage<T>]^[IdentityStorage]
+
+// base
+[AsymmetricRatchet|id:number;rootKey:HMACCryptoKey;identity:Identity;remoteIdentity: RemoteIdentity;remotePreKeyId?:number;remotePreKeySignedId:number;counter:number;currentStep:DHRatchetStep;currentRatchetKey:ECKeyPair;|decrypt(protocol:MessageSignedProtocol):ArrayBuffer;encrypt(message:ArrayBuffer):PreKeyBundleProtocol;encrypt(message:ArrayBuffer):PreKeyMessageProtocol;]
+[DHRatchetStep|remoteRatchetKey?:ECPublicKey;sendingChain?:SendingRatchet;receivingChain?:ReceivingRatchet]
+[DHRatchetStepStack|getStep(remoteRatchetKey:ECPublicKey):DHRatchetStep]
+[Stack<T>]^[DHRatchetStepStack]
+[DHRatchetStepStack]-[DHRatchetStep]
+[DHRatchetStepStack]-[AsymmetricRatchet]
+[CipherMessage|ciphertext:ArrayBuffer;hmacKey:CryptoKey;]
+[SymmetricRatchet|counter:number;rootKey:HMACCryptoKey;]
+[SendingRatchet|encrypt(message:ArrayBuffer):CipherMessage]
+[ReceivingRatchet|decrypt(message:ArrayBuffer):CipherMessage]
+[SymmetricRatchet]^[SendingRatchet]
+[SymmetricRatchet]^[ReceivingRatchet]
+[AsymmetricRatchet]->[SendingRatchet]
+[AsymmetricRatchet]->[ReceivingRatchet]
+[AsymmetricRatchet]->[Identity]
