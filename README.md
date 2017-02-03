@@ -1,7 +1,9 @@
 # 2key-ratchet
 `2key-ratchet` is an implementation of a [Double Ratchet](https://whispersystems.org/docs/specifications/doubleratchet/) protocol and [X3DH](https://whispersystems.org/docs/specifications/x3dh) in TypeScript utilizing WebCrypto. There are a few [differences](https://github.com/PeculiarVentures/2key-ratchet/blob/master/DIFFERENCES.md) between the original specifciations and `2key-ratchet`, the most significant being, as it’s name suggests, it uses two keys, one for authentication and another for key exchange.
 
-For licensing information, see the LICENSE file.
+See the [ARCHITECTURE](https://github.com/PeculiarVentures/2key-ratchet/blob/master/ARCHITECTURE.md) file to better understand the library structure.
+
+For licensing information, see the [LICENSE](https://github.com/PeculiarVentures/2key-ratchet/blob/master/LICENSE.md) file.
 
 ## Build Status
 
