@@ -36,6 +36,10 @@
     "chai": "^3.5.0",
     "protobufjs": "^6.6.3",
     "tslib": "^1.5.0",
-    "node-webcrypto-ossl": "^1.0.17"
+    "node-webcrypto-ossl": "^1.0.17",
+    "npm-run-all": "^3",
+    "nyc": "^8",
+    "typescript": "^2",
+    "watch": "^0"
   }
 }
