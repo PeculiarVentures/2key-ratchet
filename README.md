@@ -16,6 +16,7 @@ For licensing information, see the [LICENSE](https://github.com/PeculiarVentures
 ```
 bash
 npm install 2key-ratchet
+npm run build
 ```
 
 ### Usage
