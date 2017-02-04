@@ -1,7 +1,7 @@
 {
   "name": "2key-ratchet",
   "version": "1.0.0",
-  "description": "`2key-ratchet` is an implementation of a Double Ratchet protocol and X3DH in TypeScript utilizing WebCrypto.",
+  "description": "2key-ratchet is an implementation of a Double Ratchet protocol and X3DH in TypeScript utilizing WebCrypto.",
   "main": "out/classes/index.js",
   "types": "index.d.ts",
   "scripts": {
