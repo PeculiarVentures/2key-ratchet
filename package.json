@@ -27,19 +27,22 @@
     "Miroshin Stepan<microshine@mail.ru>"
   ],
   "license": "https://github.com/PeculiarVentures/2key-ratchet/blob/master/LICENSE.md",
-  "devDependencies": {
+  "dependencies": {
     "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.38",
     "@types/node": "^7.0.2",
     "@types/protobufjs": "^5.0.31",
+    "protobufjs": "^6.6.3",
+    "tslib": "^1.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^2",
     "mocha": "^3.2.0",
     "chai": "^3.5.0",
-    "protobufjs": "^6.6.3",
-    "tslib": "^1.5.0",
-    "node-webcrypto-ossl": "^1.0.17",
+    "live-server": "^1",
     "npm-run-all": "^3",
     "nyc": "^8",
-    "typescript": "^2",
-    "watch": "^0"
+    "watch": "^0",
+    "node-webcrypto-ossl": "^1.0.17"
   }
 }
