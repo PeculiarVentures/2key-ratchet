@@ -29,6 +29,9 @@
   "license": "https://github.com/PeculiarVentures/2key-ratchet/blob/master/LICENSE.md",
   "devDependencies": {
     "@types/chai": "^3.4.34",
+    "@types/mocha": "^2.2.38",
+    "@types/node": "^7.0.2",
+    "@types/protobufjs": "^5.0.31",
     "mocha": "^3.2.0",
     "chai": "^3.5.0",
     "protobufjs": "^6.6.3",
