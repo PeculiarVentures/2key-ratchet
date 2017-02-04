@@ -45,7 +45,7 @@
 [Convert|ToString(buffer:BufferSource,enc?:string):string;FromString(str:string;enc?:string):ArrayBuffer;ToHex(value:BufferSource):string;FromHex(value:string):ArrayBuffer;ToBase64(value:BufferSource):string;FromBase64(value:string):ArrayBuffer;ToBase64Url(value:BufferSource):string;FromBase64Url(value:string):ArrayBuffer;ToBinary(value:BufferSource):string;FromBinary(value:string):ArrayBuffer;ToUtf8String(value:BufferSource):string;FromUtf8String(value:string):ArrayBuffer;]
 
 // base
-[Stack<T>|legth:number;latest:T|push(item:T);]
+[Stack<T>|length:number;latest:T|push(item:T);]
 [AssocStorage<T>|length:number;|save(key:string;value:T);load(key:string):T;remove(key:string);clear();]
 [AssocStorage<T>]^[IdentityStorage]
 
