@@ -124,7 +124,7 @@ Bruce Schneier famously said "If you think cryptography can solve your problem, 
 In short, there is a lot more to making a secure product than adding cryptography, [this is a great book to get you familiar with thinking defensivly](https://www.amazon.com/Threat-Modeling-Designing-Adam-Shostack/dp/1118809998).
 
 ### WARNING
-Though this protocol is based on [The Double Ratchet Algorithm](https://whispersystems.org/docs/specifications/doubleratchet/) and [The X3DH Key Agreement Protocol](https://whispersystems.org/docs/specifications/x3dh/) several changes have been made that could change the security properties of the protocol. At this time you should consider this implementation appropriate for experimentation until further security reviews are completed.
+Though this protocol is based on [the Double Ratchet Algorithm](https://whispersystems.org/docs/specifications/doubleratchet/) and [the X3DH Key Agreement Protocol](https://whispersystems.org/docs/specifications/x3dh/) several changes have been made that could change the security properties of the protocol. At this time you should consider this implementation appropriate for experimentation until further security reviews are completed.
 
 ## Acknowlegements
 The Double Ratchet protocol and X3DH were designed by Trevor Perrin and Moxie Marlinspike, we thank them for their work.
