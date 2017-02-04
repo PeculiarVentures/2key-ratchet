@@ -127,7 +127,7 @@ In short, there is a lot more to making a secure product than adding cryptograph
 Though this library is based on [the Double Ratchet algorithm](https://whispersystems.org/docs/specifications/doubleratchet/) and [the X3DH Key Agreement protocol](https://whispersystems.org/docs/specifications/x3dh/) several [changes](https://github.com/PeculiarVentures/2key-ratchet/blob/master/DIFFERENCES.md) have been made that could change the security properties they offer. At this time you should consider this implementation appropriate for experimentation until further security reviews are completed.
 
 ## Acknowlegements
-The Double Ratchet protocol and X3DH were designed by Trevor Perrin and Moxie Marlinspike, we thank them for their work.
+Both Double Ratchet and X3DH were designed by Trevor Perrin and Moxie Marlinspike, we thank them for their work.
 
 ## Related
 - [A Formal Security Analysis of the Signal Messaging Protocol](https://eprint.iacr.org/2016/1013.pdf)
