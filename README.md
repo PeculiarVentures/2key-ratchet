@@ -118,7 +118,7 @@ Pull requests – patches, improvements, new features – are a fantastic help. 
 
 ## Note
 
-Bruce Schneier famously said "If you think cryptography can solve your problem, then you don't understand your problem and you don't understand cryptography". The point being, using 2key-ratchet, or any other "security related" library, will not make your product secure. 
+Bruce Schneier famously said "If you think cryptography can solve your problem, then you don't understand your problem and you don't understand cryptography". The point being, using 2key-ratchet, or any other "cryptography related" library, will not necesarily make your product secure. 
 
 In short, there is a lot more to making a secure product than adding cryptography, [this is a great book to get you familiar with thinking defensivly](https://www.amazon.com/Threat-Modeling-Designing-Adam-Shostack/dp/1118809998).
 
