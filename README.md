@@ -18,7 +18,7 @@ bash
 npm install 2key-ratchet
 ```
 
-### Example Usage
+### Usage
 
 First you need to require the library:
 
