@@ -8,7 +8,7 @@ For licensing information, see the [LICENSE](https://github.com/PeculiarVentures
 ## Build Status
 
 [![CircleCI](https://circleci.com/gh/PeculiarVentures/2key-ratchet.svg?style=svg&circle-token=29f5d4fefececbe5668f0c0858cc583e4e130765)](https://circleci.com/gh/PeculiarVentures/2key-ratchet)
-[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://raw.githubusercontent.com/PeculiarVentures/2key-ratchet/master/LICENSE)
 
 ## Instructions
 
