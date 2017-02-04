@@ -4,7 +4,7 @@
 
 ## DETAIL
 
-![image](https://cloud.githubusercontent.com/assets/1619279/22614815/cd7fc43e-ea3c-11e6-8f2d-7fd45395e3ca.png)
+![image](https://cloud.githubusercontent.com/assets/1619279/22615271/1e665c92-ea46-11e6-9d30-088942f7ec86.png)
 
 ## PACKAGE
 
