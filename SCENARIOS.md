@@ -11,6 +11,6 @@ Progressive Web Applications (PWAs) in particular can benefit from the traits of
 | Chat and Video Conferencing  | Customer support and communicating with your friends or busineses in real time are increasingly common cases. Having a simple Javascript based library for confidential communication would make it possible for these experiences to be privacy preserving.                                                |
 | Authentication               | It would be possible, when cobined with [Key Transparency](https://github.com/google/key-transparency), to design a transparent authentication solution that was not dependent on the exchange of passwords.               |
 
-Beyond the web cases listed above you can also imagine `Internet Of Things` cases like light switches, thermostats and other IoT devices that could benefit from being able to communicate amongst themselves without the need of a central authority. 
+Beyond the web cases listed above you can also imagine `Internet Of Things` cases like thermostats and other IoT devices fast enough to contain an [embedable Javascript runtime](http://duktape.org/) that could benefit from being able to communicate amongst themselves without the need of a central authority. 
 
 In short, there are two cases where this protocol suite make sense, the first being when you want to augment SSL to limit the information exposed to an intermediary server and the second being when it is not practical to deliver a secure session via TLS.
