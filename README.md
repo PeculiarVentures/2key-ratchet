@@ -10,7 +10,7 @@ They were designed with goals of providing both forward secrecy and cryptographi
 
 The term “Double Ratchet” comes from how the protocol makes sure each message gets a new key: their [Diffie-Hellman keys are “ratcheted”](https://github.com/PeculiarVentures/2key-ratchet/blob/master/src/classes/asym_ratchet.ts) by each new message exchange; and so are the send/receive chains (the [“symmetric-key ratchet”](https://github.com/PeculiarVentures/2key-ratchet/blob/master/src/classes/sym_ratchet.ts)).
 
-There are a few [differences](https://github.com/PeculiarVentures/2key-ratchet/blob/master/DIFFERENCES.md) between the original specifciations and `2key-ratchet`, the most significant being, as it’s name suggests, it uses [two keys](https://github.com/PeculiarVentures/2key-ratchet/blob/3538a1481b4249830549e1c1d251fb6a7a7512ec/src/classes/data/identity.ts#L18-L19), one for authentication and another for key exchange.
+There are a few [differences](https://github.com/PeculiarVentures/2key-ratchet/blob/master/DIFFERENCES.md) between the original specifciations and `2key-ratchet`, the most significant being, as it’s name suggests, it uses [two keys](https://github.com/PeculiarVentures/2key-ratchet/blob/3538a1481b4249830549e1c1d251fb6a7a7512ec/src/classes/data/identity.ts#L18-L19), one for authentication and another for key exchange. The other big one is that secp256r1 is used instead of curve25519 because browsers do not yet support this curve nativly.
 
 See the [ARCHITECTURE](https://github.com/PeculiarVentures/2key-ratchet/blob/master/ARCHITECTURE.md) file to better understand the library structure.
 
