@@ -6,6 +6,8 @@
 
 `2key-ratchet` is an implementation of a [Double Ratchet](https://whispersystems.org/docs/specifications/doubleratchet/) protocol and [X3DH](https://whispersystems.org/docs/specifications/x3dh) in TypeScript utilizing WebCrypto. This suite of protocols was designed with goals of providing both forward secrecy and cryptographic deniability. Importantly there have been several independent [security reviews](https://eprint.iacr.org/2016/1013.pdf) of them that concluded they deliver on those goals.
 
+The term “Double Ratchet” comes from how the protocol makes sure each message gets a new key: their [Diffie-Hellman keys are “ratcheted”](https://github.com/PeculiarVentures/2key-ratchet/blob/master/src/classes/asym_ratchet.ts) by each new message exchange; and so are the send/receive chains (the [“symmetric-key ratchet”](https://github.com/PeculiarVentures/2key-ratchet/blob/master/src/classes/sym_ratchet.ts)).
+
 There are a few [differences](https://github.com/PeculiarVentures/2key-ratchet/blob/master/DIFFERENCES.md) between the original specifciations and `2key-ratchet`, the most significant being, as it’s name suggests, it uses two keys, one for authentication and another for key exchange.
 
 See the [ARCHITECTURE](https://github.com/PeculiarVentures/2key-ratchet/blob/master/ARCHITECTURE.md) file to better understand the library structure.
