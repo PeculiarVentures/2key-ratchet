@@ -142,3 +142,5 @@ Both Double Ratchet and X3DH were designed by Trevor Perrin and Moxie Marlinspik
 - [Web Cryptography API](https://www.w3.org/TR/2016/PR-WebCryptoAPI-20161215/)
 - [The X3DH Key Agreement Protocol](https://whispersystems.org/docs/specifications/x3dh/)
 - [The Double Ratchet Algorithm](https://whispersystems.org/docs/specifications/doubleratchet/)
+- [OMEMO Multi-End Message and Object Encryption](https://conversations.im/omemo/)
+- [Matrix](https://matrix.org/)
