@@ -138,6 +138,7 @@ Both Double Ratchet and X3DH were designed by Trevor Perrin and Moxie Marlinspik
 
 ## Related
 - [A Formal Security Analysis of the Signal Messaging Protocol](https://eprint.iacr.org/2016/1013.pdf)
+- [WhatsApp Security Paper Analysis](https://courses.csail.mit.edu/6.857/2016/files/36.pdf)
 - [Web Cryptography API](https://www.w3.org/TR/2016/PR-WebCryptoAPI-20161215/)
 - [The X3DH Key Agreement Protocol](https://whispersystems.org/docs/specifications/x3dh/)
 - [The Double Ratchet Algorithm](https://whispersystems.org/docs/specifications/doubleratchet/)
