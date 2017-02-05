@@ -143,4 +143,4 @@ Both Double Ratchet and X3DH were designed by Trevor Perrin and Moxie Marlinspik
 - [The X3DH Key Agreement Protocol](https://whispersystems.org/docs/specifications/x3dh/)
 - [The Double Ratchet Algorithm](https://whispersystems.org/docs/specifications/doubleratchet/)
 - [OMEMO Multi-End Message and Object Encryption](https://conversations.im/omemo/)
-- [Matrix E2E Protocol](https://matrix.org/docs/guides/e2e_implementation.html)
+- [Matrix OLM](https://matrix.org/docs/guides/e2e_implementation.html)
