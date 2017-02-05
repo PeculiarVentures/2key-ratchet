@@ -4,7 +4,9 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://raw.githubusercontent.com/PeculiarVentures/2key-ratchet/master/LICENSE.md)
 
 
-`2key-ratchet` is an implementation of a [Double Ratchet](https://whispersystems.org/docs/specifications/doubleratchet/) protocol and [X3DH](https://whispersystems.org/docs/specifications/x3dh) in TypeScript utilizing WebCrypto. There are a few [differences](https://github.com/PeculiarVentures/2key-ratchet/blob/master/DIFFERENCES.md) between the original specifciations and `2key-ratchet`, the most significant being, as it’s name suggests, it uses two keys, one for authentication and another for key exchange.
+`2key-ratchet` is an implementation of a [Double Ratchet](https://whispersystems.org/docs/specifications/doubleratchet/) protocol and [X3DH](https://whispersystems.org/docs/specifications/x3dh) in TypeScript utilizing WebCrypto. This suite of protocols was designed with goals of providing both forward secrecy and cryptographic deniability. Importantly there have been several independent [security reviews](https://eprint.iacr.org/2016/1013.pdf) of them that concluded they deliver on those goals.
+
+There are a few [differences](https://github.com/PeculiarVentures/2key-ratchet/blob/master/DIFFERENCES.md) between the original specifciations and `2key-ratchet`, the most significant being, as it’s name suggests, it uses two keys, one for authentication and another for key exchange.
 
 See the [ARCHITECTURE](https://github.com/PeculiarVentures/2key-ratchet/blob/master/ARCHITECTURE.md) file to better understand the library structure.
 
