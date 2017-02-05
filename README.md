@@ -145,4 +145,3 @@ Both Double Ratchet and X3DH were designed by Trevor Perrin and Moxie Marlinspik
 - [OMEMO Multi-End Message and Object Encryption](https://xmpp.org/extensions/xep-0384.html)
 - [Matrix OLM](https://matrix.org/docs/guides/e2e_implementation.html)
 - [Double Ratchet & the Quantum Computers](https://www.fredericjacobs.com/blog/2016/04/07/qc-axolotl/)
-- [unMessage Protocol](https://unmessage.readthedocs.io/en/latest/protocol.html)
