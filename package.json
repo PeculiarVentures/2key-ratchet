@@ -2,12 +2,17 @@
   "name": "2key-ratchet",
   "version": "1.0.0",
   "description": "2key-ratchet is an implementation of a Double Ratchet protocol and X3DH in TypeScript utilizing WebCrypto.",
-  "main": "out/classes/index.js",
+  "main": "dist/2key-ratchet.js",
+  "module": "dist/2key-ratchet.lib.js",
+  "jsnext:main": "dist/2key-ratchet.lib.js",
   "types": "index.d.ts",
   "scripts": {
     "test": "mocha out/test",
     "build": "npm run build:es5",
     "build:es5": "tsc",
+    "build:dist": "npm run build:lib && npm run build:module",
+    "build:module": "rollup -c",
+    "build:lib": "rollup -c rollup.config.lib.js",
     "build:map": "tsc --sourceMap",
     "pub": "npm version patch && npm publish && git push",
     "sync": "git ac && git pull --rebase && git push",
@@ -22,7 +27,7 @@
     "coveralls": "nyc report --reporter=text-lcov | coveralls"
   },
   "keywords": [],
-    "author": "PeculiarVentures",
+  "author": "PeculiarVentures",
   "contributors": [
     "Miroshin Stepan<microshine@mail.ru>"
   ],
@@ -35,13 +40,16 @@
     "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.38",
     "@types/node": "^7.0.2",
-    "typescript": "^2",
-    "mocha": "^3.2.0",
     "chai": "^3.5.0",
     "live-server": "^1",
+    "mocha": "^3.2.0",
+    "node-webcrypto-ossl": "^1.0.17",
     "npm-run-all": "^3",
     "nyc": "^8",
-    "watch": "^0",
-    "node-webcrypto-ossl": "^1.0.17"
+    "rollup": "^0.41.4",
+    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-typescript": "^0.8.1",
+    "typescript": "^2",
+    "watch": "^0"
   }
 }
