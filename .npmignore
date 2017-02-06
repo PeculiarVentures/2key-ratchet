@@ -2,6 +2,9 @@
 coverage
 node_modules
 out
-dist
+src
 /src/test*.ts
 cSpell.json
+circle.yml
+rollup.*.js
+ts*.json

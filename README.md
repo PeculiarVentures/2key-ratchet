@@ -10,7 +10,7 @@ The Double Ratchet protocol and X3DH were designed with goals of providing both 
 
 The term “Double Ratchet” comes from how the protocol makes sure each message gets a new key: their [Diffie-Hellman keys are “ratcheted”](https://github.com/PeculiarVentures/2key-ratchet/blob/master/src/classes/asym_ratchet.ts) by each new message exchange; and so are the send/receive chains (the [“symmetric-key ratchet”](https://github.com/PeculiarVentures/2key-ratchet/blob/master/src/classes/sym_ratchet.ts)).
 
-There are a few [differences](https://github.com/PeculiarVentures/2key-ratchet/blob/master/DIFFERENCES.md) between the original specifciations and `2key-ratchet`, the most significant being, as it’s name suggests, it uses [two keys](https://github.com/PeculiarVentures/2key-ratchet/blob/3538a1481b4249830549e1c1d251fb6a7a7512ec/src/classes/data/identity.ts#L18-L19), one for authentication and another for key exchange. The other big one is that secp256r1 is used instead of curve25519 because browsers do not yet support this curve nativly.
+There are a few [differences](https://github.com/PeculiarVentures/2key-ratchet/blob/master/DIFFERENCES.md) between the original specifications and `2key-ratchet`, the most significant being, as it’s name suggests, it uses [two keys](https://github.com/PeculiarVentures/2key-ratchet/blob/3538a1481b4249830549e1c1d251fb6a7a7512ec/src/classes/data/identity.ts#L18-L19), one for authentication and another for key exchange. The other big one is that secp256r1 is used instead of curve25519 because browsers do not yet support this curve natively.
 
 See the [ARCHITECTURE](https://github.com/PeculiarVentures/2key-ratchet/blob/master/ARCHITECTURE.md) file to better understand the library structure.
 
@@ -21,19 +21,33 @@ For licensing information, see the [LICENSE](https://github.com/PeculiarVentures
 ### Installation
 
 ```
-bash
 npm install 2key-ratchet
-npm run build
-npm test
 ```
+
+| Name            | Size   | Description                                    |
+|-----------------|--------|------------------------------------------------|
+| 2key-ratchet.js |  66 Kb | UMD module without external modules            | 
+
 
 ### Usage
 
 First you need to require the library:
 
+NODEJS:
+
 ```javascript
 let DKeyRatchet = require("2key-ratchet");
 ```
+
+BROWSER:
+
+```html
+<script src="2key-ratchet.js"></script>
+```
+
+__NOTE:__ You have to import [tslib](https://github.com/Microsoft/tslib) and [protobufjs](https://github.com/dcodeIO/ProtoBuf.js/#browsers) for browser too.
+
+The `DKeyRatchet` namespace will always be available globally / also supports AMD loaders.
 
 Then generate an Identity Key:
 
@@ -126,14 +140,14 @@ Pull requests – patches, improvements, new features – are a fantastic help. 
 
 ## Note
 
-Bruce Schneier famously said "If you think cryptography can solve your problem, then you don't understand your problem and you don't understand cryptography". The point being, using 2key-ratchet, or any other "cryptography related" library, will not necesarily make your product secure. 
+Bruce Schneier famously said "If you think cryptography can solve your problem, then you don't understand your problem and you don't understand cryptography". The point being, using 2key-ratchet, or any other "cryptography related" library, will not necessarily make your product secure. 
 
-In short, there is a lot more to making a secure product than adding cryptography, [this is a great book to get you familiar with thinking defensivly](https://www.amazon.com/Threat-Modeling-Designing-Adam-Shostack/dp/1118809998).
+In short, there is a lot more to making a secure product than adding cryptography, [this is a great book to get you familiar with thinking defensively](https://www.amazon.com/Threat-Modeling-Designing-Adam-Shostack/dp/1118809998).
 
 ### WARNING
 Though this library is based on [the Double Ratchet Algorithm](https://whispersystems.org/docs/specifications/doubleratchet/) and [the X3DH Key Agreement Protocol](https://whispersystems.org/docs/specifications/x3dh/) several [changes](https://github.com/PeculiarVentures/2key-ratchet/blob/master/DIFFERENCES.md) have been made that could change the security properties they offer. At this time you should consider this implementation appropriate for experimentation until further security reviews are completed.
 
-## Acknowlegements
+## Acknowledgements
 Both Double Ratchet and X3DH were designed by Trevor Perrin and Moxie Marlinspike, we thank them for their work.
 
 ## Related

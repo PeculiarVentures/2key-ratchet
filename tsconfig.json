@@ -7,7 +7,6 @@
             "dom"
         ],
         "noImplicitAny": true,
-        "sourceMap": false,
         "experimentalDecorators": true,
         "importHelpers": true,
         "outDir": "out"
