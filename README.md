@@ -24,6 +24,8 @@ For licensing information, see the [LICENSE](https://github.com/PeculiarVentures
 npm install 2key-ratchet
 ```
 
+### Size
+
 | Name            | Size   | Description                                    |
 |-----------------|--------|------------------------------------------------|
 | 2key-ratchet.js |  66 Kb | UMD module without external modules            | 
@@ -45,9 +47,9 @@ BROWSER:
 <script src="2key-ratchet.js"></script>
 ```
 
-__NOTE:__ You have to import [tslib](https://github.com/Microsoft/tslib) and [protobufjs](https://github.com/dcodeIO/ProtoBuf.js/#browsers) for browser too.
+__NOTE:__ You will also have to import [tslib](https://github.com/Microsoft/tslib) and [protobufjs](https://github.com/dcodeIO/ProtoBuf.js/#browsers) for use in the browser.
 
-The `DKeyRatchet` namespace will always be available globally / also supports AMD loaders.
+The `DKeyRatchet` namespace will always be available globally and also supports AMD loaders.
 
 Then generate an Identity Key:
 
