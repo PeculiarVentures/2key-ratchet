@@ -7,20 +7,7 @@
  * 
  */
 
-import { ECPublicKey } from "../../crypto";
-export interface IConverter<In> {
-    set: (value: In) => PromiseLike<Uint8Array>;
-    get: (value: Uint8Array) => PromiseLike<In>;
-}
-
-export class ArrayBufferConverter {
-    public static async set(value: ArrayBuffer) {
-        return new Uint8Array(value);
-    }
-    public static async get(value: Uint8Array) {
-        return value.buffer;
-    };
-}
+import { ECPublicKey } from "../crypto";
 
 export class ECDSAPublicKeyConverter {
     public static async set(value: ECPublicKey) {

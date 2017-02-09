@@ -11,10 +11,10 @@
 [note: @ProtobufProperty - decorator describes Protobuf Field]
 
 // protocol
-[ProtocolObject]
+[ObjectProto]
 [BaseProtocol]
 
-[ProtocolObject]^[BaseProtocol]
+[ObjectProto]^[BaseProtocol]
 [BaseProtocol]^[IdentityProtocol]
 [BaseProtocol]^[MessageProtocol]
 [BaseProtocol]^[MessageSignedProtocol]
@@ -31,10 +31,6 @@
 [Identity]
 [PreKey]
 [RemoteIdentity]
-
-// utils
-[note: BufferSource = ArrayBuffer | ArrayBufferView (Uint8Array, Uint16Array, etc.)]
-[Convert]
 
 // base
 [Stack<T>]

@@ -7,10 +7,10 @@
  * 
  */
 
+import { Convert } from "pvtsutils";
 import { INFO_MESSAGE_KEYS } from "./const";
 import { ECKeyPair, ECPublicKey, Secret } from "./crypto";
 import { HMACCryptoKey, RatchetKey, SymmetricKDFResult } from "./type";
-import { Convert } from "./utils";
 
 // Constants for KDF_CK function
 const CIPHER_KEY_KDF_INPUT = new Uint8Array([1]).buffer;

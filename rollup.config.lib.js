@@ -17,18 +17,20 @@ let banner = [
 export default {
     entry: "src/classes/index.ts",
     plugins: [
-        typescript({ typescript: require("typescript"), target: "es2015", removeComments: true }),
+        typescript({ typescript: require("typescript"), target: "es5", removeComments: true }),
     ],
     banner: banner.join("\n"),
-    external: ["protobufjs", "tslib"],
+    external: ["protobufjs", "tslib", "pvtsutils", "tsprotobuf"],
     globals: {
         protobufjs: "protobufjs",
         tslib: "tslib",
+        "pvtsutils": "TSTool",
+        "tsprotobuf": "TSProtobuf",
     },
     targets: [
         {
             dest: pkg.module,
-            format: "umd",
+            format: "es",
             moduleName: "DKeyRatchet"
         }
     ]

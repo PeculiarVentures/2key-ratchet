@@ -7,9 +7,9 @@
  * 
  */
 
+import { combine, Convert } from "pvtsutils";
 import { HASH_NAME, HMAC_NAME, SECRET_KEY_NAME } from "../const";
 import { HMACCryptoKey } from "../type";
-import { combine, Convert } from "../utils";
 import crypto from "./crypto";
 
 const AES_ALGORITHM = { name: "AES-CBC", length: 256 };

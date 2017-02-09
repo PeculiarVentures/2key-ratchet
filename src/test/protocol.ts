@@ -1,8 +1,8 @@
 import { assert } from "chai";
+import { Convert, isEqual } from "pvtsutils";
 import { Identity } from "../classes/data";
 import { IdentityProtocol, MessageSignedProtocol, PreKeyBundleProtocol } from "../classes/protocol";
 import { PreKeySignedProtocol } from "../classes/protocol/prekey_signed";
-import { Convert, isEqual } from "../classes/utils";
 import { createIdentity, createPreKeyBundle } from "./helper";
 
 context("Protocol", () => {
@@ -36,10 +36,10 @@ context("Protocol", () => {
                 })
                 .then((res) => {
                     identity = res;
-                    return identity.exportProtocol();
+                    return identity.exportProto();
                 })
                 .then((res) => {
-                    return IdentityProtocol.importProtocol(res);
+                    return IdentityProtocol.importProto(res);
                 })
                 .then((res) => {
                     assert.equal(identity.signingKey.id, res.signingKey.id);
@@ -120,10 +120,10 @@ context("Protocol", () => {
                     return preKeySigned.sign(identity.signingKey.privateKey);
                 })
                 .then(() => {
-                    return preKeySigned.exportProtocol();
+                    return preKeySigned.exportProto();
                 })
                 .then((protocol) => {
-                    return PreKeySignedProtocol.importProtocol(protocol);
+                    return PreKeySignedProtocol.importProto(protocol);
                 })
                 .then((preKey) => {
                     preKeySigned2 = preKey;
@@ -176,8 +176,8 @@ context("Protocol", () => {
                 async function Test() {
                     const identity = await createIdentity(1);
                     const bundle = await createPreKeyBundle(identity);
-                    const raw = await bundle.exportProtocol();
-                    const bundle2 = await PreKeyBundleProtocol.importProtocol(raw);
+                    const raw = await bundle.exportProto();
+                    const bundle2 = await PreKeyBundleProtocol.importProto(raw);
                     assert.isTrue(bundle2.preKey.isEmpty());
                     assert.isFalse(bundle2.preKeySigned.isEmpty());
                     assert.isFalse(bundle2.identity.isEmpty());
@@ -191,8 +191,8 @@ context("Protocol", () => {
                     const bundle = await createPreKeyBundle(identity);
                     bundle.preKey.id = 1;
                     bundle.preKey.key = bundle.preKeySigned.key;
-                    const raw = await bundle.exportProtocol();
-                    const bundle2 = await PreKeyBundleProtocol.importProtocol(raw);
+                    const raw = await bundle.exportProto();
+                    const bundle2 = await PreKeyBundleProtocol.importProto(raw);
                     assert.isFalse(bundle2.preKey.isEmpty());
                     assert.isFalse(bundle2.preKeySigned.isEmpty());
                     assert.isFalse(bundle2.identity.isEmpty());

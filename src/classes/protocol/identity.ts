@@ -7,12 +7,13 @@
  * 
  */
 
+import { ProtobufElement, ProtobufProperty } from "tsprotobuf";
 import { Curve, ECPublicKey } from "../crypto";
 import { Identity } from "../data";
 import { BaseProtocol } from "./base";
-import { ECDHPublicKeyConverter, ECDSAPublicKeyConverter, ProtobufElement, ProtobufProperty } from "./parser";
+import { ECDHPublicKeyConverter, ECDSAPublicKeyConverter } from "./converter";
 
-@ProtobufElement({ localName: "Identity" })
+@ProtobufElement({ name: "Identity" })
 export class IdentityProtocol extends BaseProtocol {
 
     public static async fill(identity: Identity) {

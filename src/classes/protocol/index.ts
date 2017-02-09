@@ -7,7 +7,6 @@
  * 
  */
 
-export * from "./parser/type";
 export * from "./identity";
 export * from "./message_signed";
 export * from "./prekey_message";

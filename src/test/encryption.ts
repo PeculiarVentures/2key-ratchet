@@ -1,11 +1,11 @@
 import { assert } from "chai";
+import { Convert, isEqual } from "pvtsutils";
 import { AsymmetricRatchet } from "../classes/asym_ratchet";
 import { Secret } from "../classes/crypto";
 import { Identity } from "../classes/data/identity";
 import { PreKey } from "../classes/data/pre_key";
 import { MessageSignedProtocol, PreKeyBundleProtocol, PreKeyMessageProtocol } from "../classes/protocol";
 import { ReceivingRatchet, SendingRatchet } from "../classes/sym_ratchet";
-import { Convert, isEqual } from "../classes/utils";
 import { createIdentity, createPreKeyBundle } from "./helper";
 
 const MESSAGE = Convert.FromUtf8String("Привет!");

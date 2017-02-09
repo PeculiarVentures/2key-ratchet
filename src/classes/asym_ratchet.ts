@@ -7,6 +7,7 @@
  * 
  */
 
+import { combine, Convert } from "pvtsutils";
 import { INFO_RATCHET, INFO_TEXT, MAX_RATCHET_STACK_SIZE, SECRET_KEY_NAME } from "./const";
 import { Curve, ECKeyPair, ECPublicKey, Secret } from "./crypto";
 import { Identity, PreKey } from "./data";
@@ -15,7 +16,6 @@ import { MessageSignedProtocol, PreKeyBundleProtocol, PreKeyMessageProtocol } fr
 import { Stack } from "./stack";
 import { ReceivingRatchet, SendingRatchet, SymmetricRatchet } from "./sym_ratchet";
 import { ECDHPrivateKey, ECDHPublicKey, HMACCryptoKey } from "./type";
-import { combine, Convert } from "./utils";
 
 /**
  * Authentication. Calculates rootKey for DH ratchet

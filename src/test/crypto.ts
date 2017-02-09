@@ -1,6 +1,6 @@
 import { assert } from "chai";
+import { Convert } from "pvtsutils";
 import { Curve, ECPublicKey } from "../classes/crypto";
-import { Convert } from "../classes/utils";
 
 context("Crypto", () => {
 

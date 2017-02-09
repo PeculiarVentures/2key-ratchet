@@ -7,11 +7,12 @@
  * 
  */
 
+import { ProtobufElement, ProtobufProperty } from "tsprotobuf";
 import { ECPublicKey} from "../crypto";
 import { BaseProtocol } from "./base";
-import { ECDHPublicKeyConverter, ProtobufElement, ProtobufProperty } from "./parser";
+import {ECDHPublicKeyConverter} from "./converter";
 
-@ProtobufElement({ localName: "PreKey" })
+@ProtobufElement({ name: "PreKey" })
 export class PreKeyProtocol extends BaseProtocol {
 
     @ProtobufProperty({ id: 1, type: "uint32", required: true })

@@ -7,11 +7,11 @@
  * 
  */
 
+import { ArrayBufferConverter, ProtobufElement, ProtobufProperty } from "tsprotobuf";
 import { Curve, ECPublicKey } from "../crypto";
-import { ArrayBufferConverter, ProtobufElement, ProtobufProperty } from "./parser";
 import { PreKeyProtocol } from "./prekey";
 
-@ProtobufElement({ localName: "PreKeySigned" })
+@ProtobufElement({ name: "PreKeySigned" })
 export class PreKeySignedProtocol extends PreKeyProtocol {
 
     @ProtobufProperty({ id: 3, converter: ArrayBufferConverter, required: true })

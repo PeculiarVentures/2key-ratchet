@@ -7,8 +7,8 @@
  * 
  */
 
+import { Convert, isEqual } from "pvtsutils";
 import { ECKeyType } from "../type";
-import { Convert, isEqual } from "../utils";
 import crypto from "./crypto";
 import { Curve } from "./curve";
 import { Secret } from "./secret";
@@ -71,7 +71,7 @@ export class ECPublicKey {
             x,
             y,
         };
-        const usage = (type === "ECDSA" ? ["verify"] : ["deriveBits"]);
+        const usage = (type === "ECDSA" ? ["verify"] : []);
         const key = await crypto.subtle
             .importKey("jwk", jwk, { name: type, namedCurve: Curve.NAMED_CURVE }, true, usage);
         const res = await ECPublicKey.create(key);

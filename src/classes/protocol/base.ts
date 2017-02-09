@@ -7,10 +7,10 @@
  * 
  */
 
-import { ProtobufElement, ProtobufProperty, ProtocolObject } from "./parser";
+import { ObjectProto, ProtobufElement, ProtobufProperty } from "tsprotobuf";
 
-@ProtobufElement({ localName: "Base" })
-export abstract class BaseProtocol extends ProtocolObject {
+@ProtobufElement({ name: "Base" })
+export abstract class BaseProtocol extends ObjectProto {
 
     @ProtobufProperty({ id: 0, type: "uint32", defaultValue: 1 })
     public version: number;

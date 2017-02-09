@@ -1,6 +1,7 @@
 import * as dgram from "dgram";
 import { EventEmitter } from "events";
-import { AsymmetricRatchet, Convert, Identity, MessageSignedProtocol, PreKey } from "../classes";
+import { Convert } from "pvtsutils";
+import { AsymmetricRatchet, Identity, MessageSignedProtocol, PreKey } from "../classes";
 import { IdentityProtocol, PreKeyBundleProtocol, PreKeyMessageProtocol } from "../classes";
 import { ADDRESS, CLIENT_PORT, SERVER_BUNDLE_PORT, SERVER_PORT } from "./const";
 
@@ -77,18 +78,18 @@ export class Server extends EventEmitter {
 
     public async send(text: string) {
         const protocol = await this.cipher.encrypt(Convert.FromUtf8String(text));
-        const buf = await protocol.exportProtocol();
+        const buf = await protocol.exportProto();
         this.messenger.send(new Buffer(buf), CLIENT_PORT, ADDRESS);
     }
 
     protected async onMessage(data: ArrayBuffer) {
         let message: MessageSignedProtocol;
         if (this.cipher) {
-            message = await MessageSignedProtocol.importProtocol(data);
+            message = await MessageSignedProtocol.importProto(data);
         } else {
             let preKeyMessage: PreKeyMessageProtocol;
             try {
-                preKeyMessage = await PreKeyMessageProtocol.importProtocol(data);
+                preKeyMessage = await PreKeyMessageProtocol.importProto(data);
             } catch (err) {
                 this.emit("error", new Error("Incoming message is not PreKeyMessage"));
                 return;
@@ -102,7 +103,7 @@ export class Server extends EventEmitter {
     }
 
     protected async onInfo(info: dgram.RemoteInfo) {
-        const bundle = await this.bundle.exportProtocol();
+        const bundle = await this.bundle.exportProto();
         this.info.send(new Buffer(bundle), info.port, info.address);
     }
 

@@ -34,6 +34,8 @@
   "license": "https://github.com/PeculiarVentures/2key-ratchet/blob/master/LICENSE.md",
   "dependencies": {
     "protobufjs": "^6.6.3",
+    "tsprotobuf": "^1.0.2",
+    "pvtsutils": "^1.0.2",
     "tslib": "^1.5.0"
   },
   "devDependencies": {

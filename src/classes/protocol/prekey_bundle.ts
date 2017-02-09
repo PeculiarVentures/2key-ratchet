@@ -7,13 +7,13 @@
  * 
  */
 
+import { ProtobufElement, ProtobufProperty } from "tsprotobuf";
 import { BaseProtocol } from "./base";
 import { IdentityProtocol } from "./identity";
-import { ProtobufElement, ProtobufProperty } from "./parser";
 import { PreKeyProtocol } from "./prekey";
 import { PreKeySignedProtocol } from "./prekey_signed";
 
-@ProtobufElement({ localName: "PreKeyBundle" })
+@ProtobufElement({ name: "PreKeyBundle" })
 export class PreKeyBundleProtocol extends BaseProtocol {
 
     @ProtobufProperty({ id: 1, type: "uint32", required: true })

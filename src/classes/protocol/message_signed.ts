@@ -7,13 +7,13 @@
  * 
  */
 
+import { ProtobufElement, ProtobufProperty } from "tsprotobuf";
+import * as utils from "pvtsutils";
 import { Curve, ECPublicKey, Secret } from "../crypto";
-import * as utils from "../utils";
 import { BaseProtocol } from "./base";
 import { MessageProtocol } from "./message";
-import { ProtobufElement, ProtobufProperty } from "./parser";
 
-@ProtobufElement({ localName: "MessageSigned" })
+@ProtobufElement({ name: "MessageSigned" })
 export class MessageSignedProtocol extends BaseProtocol {
 
     public receiverKey: ECPublicKey;
@@ -38,7 +38,7 @@ export class MessageSignedProtocol extends BaseProtocol {
     protected async getSignedRaw() {
         const receiverKey = this.receiverKey.serialize();
         const senderKey = this.senderKey.serialize();
-        const message = await this.message.exportProtocol();
+        const message = await this.message.exportProto();
 
         const data = utils.combine(receiverKey, senderKey, message);
         return data;

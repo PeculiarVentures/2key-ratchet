@@ -12,10 +12,10 @@
 [note: @ProtobufProperty - decorator describes Protobuf Field]
 
 // protocol
-[ProtocolObject|importProtocol(raw:ArrayBuffer);exportProtocol():ArrayBuffer;]
+[ObjectProto|importProto(raw:ArrayBuffer);exportProto():ArrayBuffer;]
 [BaseProtocol|version:number]
 
-[ProtocolObject]^[BaseProtocol]
+[ObjectProto]^[BaseProtocol]
 [IdentityProtocol|signingKey:ECPublicKey;exchangeKey:ECPublicKey;signature:ArrayBuffer;|sign(key:CryptoKey);verify():boolean;]
 [BaseProtocol]^[IdentityProtocol]
 [MessageProtocol|senderRatchetKey:ECPublicKey;counter:number;previousCounter:number;ciphertext:ArrayBuffer;]
@@ -39,10 +39,6 @@
 [Identity|id:number;signingKey:ECKeyPair;exchangeKey:ECKeyPair;preKeys:PreKeyStorage;signedPreKey:Storage;|#create(id:number):Identity]
 [PreKey|id:number;key:ECKeyPair;|#create():PreKey;]
 [RemoteIdentity|id:number;signingKey:ECPublicKey;echangeKey:ECPublicKey;signature:ArrayBuffer;|#fill(protocol:IdentityProtocol):PreKey;fill(protocol:IdentityProtocol);verify():boolean;]
-
-// utils
-[note: BufferSource = ArrayBuffer | ArrayBufferView (Uint8Array, Uint16Array, etc.)]
-[Convert|ToString(buffer:BufferSource,enc?:string):string;FromString(str:string;enc?:string):ArrayBuffer;ToHex(value:BufferSource):string;FromHex(value:string):ArrayBuffer;ToBase64(value:BufferSource):string;FromBase64(value:string):ArrayBuffer;ToBase64Url(value:BufferSource):string;FromBase64Url(value:string):ArrayBuffer;ToBinary(value:BufferSource):string;FromBinary(value:string):ArrayBuffer;ToUtf8String(value:BufferSource):string;FromUtf8String(value:string):ArrayBuffer;]
 
 // base
 [Stack<T>|length:number;latest:T|push(item:T);]

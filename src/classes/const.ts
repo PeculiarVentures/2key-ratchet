@@ -7,7 +7,7 @@
  * 
  */
 
-import { Convert } from "./utils";
+import { Convert } from "pvtsutils";
 export const SIGN_ALGORITHM_NAME = "ECDSA";
 export const DH_ALGORITHM_NAME = "ECDH";
 export const SECRET_KEY_NAME = "AES-CBC";
