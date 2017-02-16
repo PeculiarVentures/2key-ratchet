@@ -147,6 +147,7 @@ export class AsymmetricRatchet {
     public currentStep = new DHRatchetStep();
     public currentRatchetKey: ECKeyPair;
     protected steps = new DHRatchetStepStack(MAX_RATCHET_STACK_SIZE);
+    protected promises: { [key: string]: Promise<any> } = {};
 
     // tslint:disable-next-line:no-empty
     private constructor() { }
@@ -161,38 +162,39 @@ export class AsymmetricRatchet {
      */
     public async decrypt(protocol: MessageSignedProtocol) {
         // console.info(`${this.constructor.name}:Decrypts message`);
+        return this.queuePromise("encrypt", async () => {
+            const remoteRatchetKey = protocol.message.senderRatchetKey;
+            const message = protocol.message;
 
-        const remoteRatchetKey = protocol.message.senderRatchetKey;
-        const message = protocol.message;
+            if (protocol.message.previousCounter < this.counter - MAX_RATCHET_STACK_SIZE) {
+                throw new Error("Error: Too old message");
+            }
+            let step = this.steps.getStep(remoteRatchetKey);
+            if (!step) {
+                // We ve got new ratchet key, creating new ReceivingChain
+                const ratchetStep = new DHRatchetStep();
+                ratchetStep.remoteRatchetKey = remoteRatchetKey;
+                this.steps.push(ratchetStep);
+                this.currentStep = ratchetStep;
+                step = ratchetStep;
+            }
 
-        if (protocol.message.previousCounter < this.counter - MAX_RATCHET_STACK_SIZE) {
-            throw new Error("Error: Too old message");
-        }
-        let step = this.steps.getStep(remoteRatchetKey);
-        if (!step) {
-            // We ve got new ratchet key, creating new ReceivingChain
-            const ratchetStep = new DHRatchetStep();
-            ratchetStep.remoteRatchetKey = remoteRatchetKey;
-            this.steps.push(ratchetStep);
-            this.currentStep = ratchetStep;
-            step = ratchetStep;
-        }
+            if (!step.receivingChain) {
+                // got 1 message for current ratchet step, have to create ReceiverRatchet
+                step.receivingChain = await this.createChain(this.currentRatchetKey.privateKey, remoteRatchetKey, ReceivingRatchet);
+            }
 
-        if (!step.receivingChain) {
-            // got 1 message for current ratchet step, have to create ReceiverRatchet
-            step.receivingChain = await this.createChain(this.currentRatchetKey.privateKey, remoteRatchetKey, ReceivingRatchet);
-        }
+            const decryptedMessage = await step.receivingChain.decrypt(message.cipherText, message.counter);
 
-        const decryptedMessage = await step.receivingChain.decrypt(message.cipherText, message.counter);
+            // verifying message signature
+            protocol.senderKey = this.remoteIdentity.signingKey;
+            protocol.receiverKey = this.identity.signingKey.publicKey;
+            if (!await protocol.verify(decryptedMessage.hmacKey)) {
+                throw new Error("Error: The Message did not successfully verify!");
+            }
 
-        // verifying message signature
-        protocol.senderKey = this.remoteIdentity.signingKey;
-        protocol.receiverKey = this.identity.signingKey.publicKey;
-        if (!await protocol.verify(decryptedMessage.hmacKey)) {
-            throw new Error("Error: The Message did not successfully verify!");
-        }
-
-        return decryptedMessage.cipherText;
+            return decryptedMessage.cipherText;
+        });
     }
 
     /**
@@ -205,49 +207,50 @@ export class AsymmetricRatchet {
      */
     public async encrypt(message: ArrayBuffer) {
         // console.info(`${this.constructor.name}:Encrypts message`);
+        return this.queuePromise("encrypt", async () => {
+            if (this.currentStep.receivingChain && !this.currentStep.sendingChain) {
+                // close ratchet step step
+                this.counter++;
+                this.currentRatchetKey = await this.generateRatchetKey();
+            }
+            // if false then no incoming message with new ratchet key, using old DH ratchet
+            if (!this.currentStep.sendingChain) {
+                this.currentStep.sendingChain = await this.createChain(this.currentRatchetKey.privateKey, this.currentStep.remoteRatchetKey, SendingRatchet);
+            }
 
-        if (this.currentStep.receivingChain && !this.currentStep.sendingChain) {
-            // close ratchet step step
-            this.counter++;
-            this.currentRatchetKey = await this.generateRatchetKey();
-        }
-        // if false then no incoming message with new ratchet key, using old DH ratchet
-        if (!this.currentStep.sendingChain) {
-            this.currentStep.sendingChain = await this.createChain(this.currentRatchetKey.privateKey, this.currentStep.remoteRatchetKey, SendingRatchet);
-        }
+            const encryptedMessage = await this.currentStep.sendingChain.encrypt(message);
 
-        const encryptedMessage = await this.currentStep.sendingChain.encrypt(message);
+            let preKeyMessage: PreKeyMessageProtocol | undefined;
+            if (this.steps.length === 0 &&
+                !this.currentStep.receivingChain &&
+                this.currentStep.sendingChain.counter === 1
+            ) {
+                // we send first message, MUST be PreKey message, otherwise SignedMessage
+                preKeyMessage = new PreKeyMessageProtocol();
+                preKeyMessage.registrationId = this.identity.id;
+                preKeyMessage.preKeyId = this.remotePreKeyId;
+                preKeyMessage.preKeySignedId = this.remotePreKeySignedId;
+                preKeyMessage.baseKey = this.currentRatchetKey.publicKey;
+                await preKeyMessage.identity.fill(this.identity);
+            }
 
-        let preKeyMessage: PreKeyMessageProtocol | undefined;
-        if (this.steps.length === 0 &&
-            !this.currentStep.receivingChain &&
-            this.currentStep.sendingChain.counter === 1
-        ) {
-            // we send first message, MUST be PreKey message, otherwise SignedMessage
-            preKeyMessage = new PreKeyMessageProtocol();
-            preKeyMessage.registrationId = this.identity.id;
-            preKeyMessage.preKeyId = this.remotePreKeyId;
-            preKeyMessage.preKeySignedId = this.remotePreKeySignedId;
-            preKeyMessage.baseKey = this.currentRatchetKey.publicKey;
-            await preKeyMessage.identity.fill(this.identity);
-        }
+            const signedMessage = new MessageSignedProtocol();
+            signedMessage.receiverKey = this.remoteIdentity.signingKey;
+            signedMessage.senderKey = this.identity.signingKey.publicKey;
+            // message
+            signedMessage.message.cipherText = encryptedMessage.cipherText;
+            signedMessage.message.counter = this.currentStep.sendingChain.counter - 1;
+            signedMessage.message.previousCounter = this.counter;
+            signedMessage.message.senderRatchetKey = this.currentRatchetKey.publicKey;
+            await signedMessage.sign(encryptedMessage.hmacKey);
 
-        const signedMessage = new MessageSignedProtocol();
-        signedMessage.receiverKey = this.remoteIdentity.signingKey;
-        signedMessage.senderKey = this.identity.signingKey.publicKey;
-        // message
-        signedMessage.message.cipherText = encryptedMessage.cipherText;
-        signedMessage.message.counter = this.currentStep.sendingChain.counter - 1;
-        signedMessage.message.previousCounter = this.counter;
-        signedMessage.message.senderRatchetKey = this.currentRatchetKey.publicKey;
-        await signedMessage.sign(encryptedMessage.hmacKey);
-
-        if (preKeyMessage) {
-            preKeyMessage.signedMessage = signedMessage;
-            return preKeyMessage;
-        } else {
-            return signedMessage;
-        }
+            if (preKeyMessage) {
+                preKeyMessage.signedMessage = signedMessage;
+                return preKeyMessage;
+            } else {
+                return signedMessage;
+            }
+        });
     }
 
     /**
@@ -284,6 +287,17 @@ export class AsymmetricRatchet {
         const chain = new ratchetClass(chainKey);
         this.rootKey = rootKey; // update rootKey
         return chain;
+    }
+
+    protected queuePromise<T>(key: string, fn: () => Promise<T>): Promise<T> {
+        const prev = this.promises[key] || Promise.resolve();
+        const cur = this.promises[key] = prev.then(fn, fn);
+        cur.then(() => {
+            if (this.promises[key] === cur) {
+                delete this.promises[key];
+            }
+        });
+        return cur;
     }
 
 }

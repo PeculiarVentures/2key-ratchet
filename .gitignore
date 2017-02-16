@@ -1,7 +1,8 @@
-.nyc_output
-coverage
-node_modules
-out
-dist
+/.vscode
+/.nyc_output
+/coverage
+/node_modules
+/out
+/dist
 /src/test*.ts
 cSpell.json
