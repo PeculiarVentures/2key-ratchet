@@ -8,9 +8,12 @@
  */
 
 import { ECPublicKey } from "./crypto";
+import { IJsonSerializable } from "./type";
 
-export class Stack<T> {
-    protected items: T[] = [];
+export class Stack<T extends IJsonSerializable> implements IJsonSerializable {
+
+    public  items: T[] = [];
+
     protected maxSize: number;
 
     get length() {
@@ -30,6 +33,18 @@ export class Stack<T> {
             this.items = this.items.slice(1); // pop first item from the items
         }
         this.items.push(item);
+    }
+
+    public async toJSON() {
+        const res = [];
+        for (const item of this.items) {
+            res.push(await item.toJSON());
+        }
+        return res;
+    }
+
+    public async fromJSON(obj: T[]) {
+        this.items = obj;
     }
 
 }

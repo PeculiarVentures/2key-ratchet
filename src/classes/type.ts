@@ -58,3 +58,8 @@ export interface IPreKeyPair {
 export interface IPreKeySignedPair extends IPreKeyPair {
     signature: ArrayBuffer;
 }
+
+export interface IJsonSerializable {
+    toJSON(): Promise<any>;
+    fromJSON(obj: any): Promise<void>;
+}

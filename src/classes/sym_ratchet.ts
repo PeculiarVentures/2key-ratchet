@@ -11,6 +11,7 @@ import { Convert } from "pvtsutils";
 import { INFO_MESSAGE_KEYS } from "./const";
 import { ECKeyPair, ECPublicKey, Secret } from "./crypto";
 import { HMACCryptoKey, RatchetKey, SymmetricKDFResult } from "./type";
+import { IJsonSerializable } from "./type";
 
 // Constants for KDF_CK function
 const CIPHER_KEY_KDF_INPUT = new Uint8Array([1]).buffer;
@@ -33,7 +34,18 @@ export interface CipherMessage {
     hmacKey: CryptoKey;
 }
 
-export abstract class SymmetricRatchet {
+export interface IJsonSymmetricRatchet {
+    counter: number;
+    rootKey: CryptoKey;
+}
+
+export abstract class SymmetricRatchet implements IJsonSerializable {
+
+    public static async fromJSON<T extends SymmetricRatchet>(this: { new (rootKey: CryptoKey): T }, obj: IJsonSymmetricRatchet) {
+        const res = new this(obj.rootKey);
+        res.fromJSON(obj);
+        return res;
+    }
 
     public counter = 0;
 
@@ -44,6 +56,18 @@ export abstract class SymmetricRatchet {
 
     constructor(rootKey: CryptoKey) {
         this.rootKey = rootKey;
+    }
+
+    public async toJSON() {
+        return {
+            counter: this.counter,
+            rootKey: this.rootKey,
+        } as IJsonSymmetricRatchet;
+    }
+
+    public async fromJSON(obj: IJsonSymmetricRatchet) {
+        this.counter = obj.counter;
+        this.rootKey = obj.rootKey;
     }
 
     /**
@@ -120,9 +144,24 @@ export class SendingRatchet extends SymmetricRatchet {
 
 }
 
+export interface IJsonReceivingRatchet extends IJsonSymmetricRatchet {
+    keys: ArrayBuffer[];
+}
+
 export class ReceivingRatchet extends SymmetricRatchet {
 
     protected keys: ArrayBuffer[] = [];
+
+    public async toJSON() {
+        const res: IJsonReceivingRatchet = (await super.toJSON()) as any;
+        res.keys = this.keys;
+        return res;
+    }
+
+    public async fromJSON(obj: IJsonReceivingRatchet) {
+        await super.fromJSON(obj);
+        this.keys = obj.keys;
+    }
 
     public async decrypt(message: ArrayBuffer, counter: number) {
         const cipherKey = await this.getKey(counter);

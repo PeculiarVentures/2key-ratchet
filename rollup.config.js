@@ -1,4 +1,4 @@
-// import nodeResolve from "rollup-plugin-node-resolve";
+import builtins from "rollup-plugin-node-builtins";
 import typescript from "rollup-plugin-typescript";
 
 let pkg = require("./package.json");
@@ -18,6 +18,7 @@ export default {
     entry: "src/classes/index.ts",
     plugins: [
         typescript({ typescript: require("typescript"), target: "es5", removeComments: true }),
+        builtins(),
     ],
     banner: banner.join("\n"),
     external: ["protobufjs", "tslib", "pvtsutils", "tsprotobuf"],

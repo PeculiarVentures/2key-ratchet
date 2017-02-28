@@ -81,4 +81,19 @@ export class Curve {
         return crypto.subtle.sign({ name: "ECDSA", hash: this.DIGEST_ALGORITHM }, signingKey, message);
     }
 
+    public static async ecKeyPairToJson(key: ECKeyPair) {
+        return {
+            privateKey: key.privateKey,
+            publicKey: key.publicKey.key,
+            thumbprint: await key.publicKey.thumbprint(),
+        } as CryptoKeyPair;
+    }
+
+    public static async ecKeyPairFromJson(keys: CryptoKeyPair) {
+        return {
+            privateKey: keys.privateKey,
+            publicKey: await ECPublicKey.create(keys.publicKey),
+        } as ECKeyPair;
+    }
+
 }

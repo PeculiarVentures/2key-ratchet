@@ -1,7 +1,7 @@
 import * as dgram from "dgram";
 import { EventEmitter } from "events";
 import { Convert } from "pvtsutils";
-import { AsymmetricRatchet, Identity, MessageSignedProtocol, PreKey, PreKeyBundleProtocol } from "../classes";
+import { AsymmetricRatchet, Identity, MessageSignedProtocol, PreKeyBundleProtocol } from "../classes";
 import { ADDRESS, CLIENT_PORT, SERVER_BUNDLE_PORT, SERVER_PORT } from "./const";
 
 export class Client extends EventEmitter {
@@ -9,7 +9,7 @@ export class Client extends EventEmitter {
     public static async create(id: number) {
         const client = new Client();
 
-        const identity = await Identity.create(id);
+        const identity = await Identity.create(id, 1);
         client.identity = identity;
         client.socket = dgram.createSocket("udp4");
 

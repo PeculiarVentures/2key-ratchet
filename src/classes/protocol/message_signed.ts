@@ -7,10 +7,11 @@
  * 
  */
 
-import { ProtobufElement, ProtobufProperty } from "tsprotobuf";
 import * as utils from "pvtsutils";
+import { ProtobufElement, ProtobufProperty } from "tsprotobuf";
 import { Curve, ECPublicKey, Secret } from "../crypto";
 import { BaseProtocol } from "./base";
+import { ECDSAPublicKeyConverter } from "./converter";
 import { MessageProtocol } from "./message";
 
 @ProtobufElement({ name: "MessageSigned" })
@@ -18,12 +19,13 @@ export class MessageSignedProtocol extends BaseProtocol {
 
     public receiverKey: ECPublicKey;
 
+    @ProtobufProperty({ id: 1, converter: ECDSAPublicKeyConverter, required: true })
     public senderKey: ECPublicKey;
 
-    @ProtobufProperty({ id: 1, parser: MessageProtocol, required: true })
+    @ProtobufProperty({ id: 2, parser: MessageProtocol, required: true })
     public message: MessageProtocol;
 
-    @ProtobufProperty({ id: 2, required: true })
+    @ProtobufProperty({ id: 3, required: true })
     protected signature: ArrayBuffer;
 
     public async sign(hmacKey: CryptoKey) {

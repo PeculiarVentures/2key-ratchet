@@ -1,4 +1,5 @@
-import {ObjectProto} from "tsprotobuf"; 
+import { EventEmitter } from "events";
+import { ObjectProto } from "tsprotobuf";
 
 declare namespace DKeyRatchet {
 
@@ -18,6 +19,11 @@ declare namespace DKeyRatchet {
     export interface SymmetricKDFResult {
         cipher: ArrayBuffer;
         rootKey: CryptoKey;
+    }
+
+    export interface IJsonSerializable {
+        toJSON(): Promise<any>;
+        fromJSON(obj: any): Promise<void>;
     }
 
     // crypto
@@ -258,37 +264,52 @@ declare namespace DKeyRatchet {
         toString(): string;
     }
 
-    export class Identity {
-        static create(id: number): Promise<Identity>;
+    export interface IJsonIdentity {
+        id: number;
+        signingKey: CryptoKeyPair;
+        exchangeKey: CryptoKeyPair;
+        preKeys: CryptoKeyPair[];
+        signedPreKeys: CryptoKeyPair[];
+    }
+
+    export class Identity implements IJsonSerializable {
+        public static fromJSON(obj: IJsonIdentity): Promise<Identity>;
+        static create(id: number, signedPreKeyAmount?: number, preKeyAmount?: number): Promise<Identity>;
         id: number;
         signingKey: ECKeyPair;
         exchangeKey: ECKeyPair;
-        preKeys: PreKeyStorage;
-        signedPreKeys: PreKeyStorage;
+        preKeys: ECKeyPair[];
+        signedPreKeys: ECKeyPair[];
         constructor(id: number, signingKey: ECKeyPair, exchangeKey: ECKeyPair);
-    }
-    export class IdentityStorage extends AssocStorage<Identity> {
+        public toJSON(): Promise<IJsonIdentity>;
+        public fromJSON(obj: IJsonIdentity): Promise<void>;
     }
 
-    export class PreKey {
-        static create(id: number): Promise<PreKey>;
+    export interface IJsonRemoteIdentity {
         id: number;
-        key: ECKeyPair;
-        private constructor(id, key);
-    }
-    export class PreKeyStorage extends AssocStorage<PreKey> {
+        /**
+         * Thumbprint of signing key
+         * 
+         * @type {string}
+         * @memberOf IJsonRemoteIdentity
+         */
+        thumbprint: string;
+        signingKey: CryptoKey;
+        exchangeKey: CryptoKey;
+        signature: ArrayBuffer;
     }
 
-    export class RemoteIdentity {
+    export class RemoteIdentity implements IJsonSerializable {
         static fill(protocol: IdentityProtocol): RemoteIdentity;
+        static fromJSON(obj: IJsonRemoteIdentity): Promise<RemoteIdentity>;
         id: number;
         signingKey: ECPublicKey;
         exchangeKey: ECPublicKey;
         signature: ArrayBuffer;
         fill(protocol: IdentityProtocol): void;
         verify(): PromiseLike<boolean>;
-    }
-    export class RemoteIdentityStorage extends AssocStorage<RemoteIdentity> {
+        toJSON(): Promise<IJsonRemoteIdentity>;
+        fromJSON(obj: IJsonRemoteIdentity): Promise<void>;
     }
 
     // protocol
@@ -355,7 +376,7 @@ declare namespace DKeyRatchet {
     // core
 
     export class Stack<T> {
-        protected items: T[];
+        public items: T[];
         protected maxSize: number;
         readonly length: number;
         readonly latest: T;
@@ -374,6 +395,29 @@ declare namespace DKeyRatchet {
         clear(): void;
     }
 
+    export interface IJsonAsymmetricRatchet {
+        remoteIdentity: string;
+        ratchetKey: CryptoKeyPair;
+        counter: number;
+        rootKey: CryptoKey;
+        steps: IJsonDHRatchetStep[];
+    }
+
+    export interface IJsonDHRatchetStep {
+        remoteRatchetKey?: CryptoKey;
+        sendingChain?: IJsonSymmetricRatchet;
+        receivingChain?: IJsonReceivingRatchet;
+    }
+
+    export interface IJsonSymmetricRatchet {
+        counter: number;
+        rootKey: CryptoKey;
+    }
+
+    export interface IJsonReceivingRatchet extends IJsonSymmetricRatchet {
+        keys: ArrayBuffer[];
+    }
+
     /**
      * Implementation Diffie-Hellman ratchet
      * https://whispersystems.org/docs/specifications/doubleratchet/#diffie-hellman-ratchet
@@ -381,7 +425,7 @@ declare namespace DKeyRatchet {
      * @export
      * @class AsymmetricRatchet
      */
-    export class AsymmetricRatchet {
+    export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable {
         /**
          * Creates new ratchet for given identity from PreKeyBundle or PreKey messages
          *
@@ -393,6 +437,7 @@ declare namespace DKeyRatchet {
          * @memberOf AsymmetricRatchet
          */
         static create(identity: Identity, protocol: PreKeyBundleProtocol | PreKeyMessageProtocol): Promise<AsymmetricRatchet>;
+        static fromJSON(identity: Identity, remote: RemoteIdentity, obj: IJsonAsymmetricRatchet): Promise<AsymmetricRatchet>;
         id: number;
         rootKey: HMACCryptoKey;
         identity: Identity;
@@ -404,6 +449,10 @@ declare namespace DKeyRatchet {
         currentRatchetKey: ECKeyPair;
         protected steps: DHRatchetStepStack;
         private constructor();
+
+        public on(event: "update", listener: () => void): this;
+        public once(event: "update", listener: () => void): this;
+
         /**
          * Verifies and decrypts data from SignedMessage
          *
@@ -422,6 +471,11 @@ declare namespace DKeyRatchet {
          * @memberOf AsymmetricRatchet
          */
         encrypt(message: ArrayBuffer): Promise<MessageSignedProtocol | PreKeyMessageProtocol>;
+
+        public toJSON(): Promise<IJsonAsymmetricRatchet>;
+        public fromJSON(obj: IJsonAsymmetricRatchet): Promise<void>;
+
+        public hasRatchetKey(key: CryptoKey | ECPublicKey): Promise<boolean>;
         /**
          * Generate new ratchet key
          *

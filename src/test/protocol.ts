@@ -89,7 +89,7 @@ context("Protocol", () => {
                 })
                 .then((res) => {
                     identity = res;
-                    const preKey = res.signedPreKeys.load("1");
+                    const preKey = res.signedPreKeys[0];
 
                     preKeySigned.id = identity.id;
                     preKeySigned.key = identity.signingKey.publicKey;
@@ -113,7 +113,7 @@ context("Protocol", () => {
                 })
                 .then((res) => {
                     identity = res;
-                    const preKey = res.signedPreKeys.load("1");
+                    const preKey = res.signedPreKeys[0];
 
                     preKeySigned.id = identity.id;
                     preKeySigned.key = identity.signingKey.publicKey;
@@ -145,7 +145,7 @@ context("Protocol", () => {
                 })
                 .then((res) => {
                     identity = res;
-                    const preKey = res.signedPreKeys.load("1");
+                    const preKey = res.signedPreKeys[0];
 
                     preKeySigned.id = identity.id;
                     preKeySigned.key = identity.signingKey.publicKey;

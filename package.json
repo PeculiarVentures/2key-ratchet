@@ -50,6 +50,7 @@
     "npm-run-all": "^3",
     "nyc": "^8",
     "rollup": "^0.41.4",
+    "rollup-plugin-node-builtins": "^2.1.0",
     "rollup-plugin-node-resolve": "^2.0.0",
     "rollup-plugin-typescript": "^0.8.1",
     "typescript": "^2",

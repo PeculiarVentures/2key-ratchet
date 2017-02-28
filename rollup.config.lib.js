@@ -20,7 +20,7 @@ export default {
         typescript({ typescript: require("typescript"), target: "es5", removeComments: true }),
     ],
     banner: banner.join("\n"),
-    external: ["protobufjs", "tslib", "pvtsutils", "tsprotobuf"],
+    external: ["protobufjs", "tslib", "pvtsutils", "tsprotobuf", "events"],
     globals: {
         protobufjs: "protobufjs",
         tslib: "tslib",

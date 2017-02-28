@@ -9,4 +9,3 @@
 
 export * from "./identity";
 export * from "./remote_identity";
-export * from "./pre_key";
