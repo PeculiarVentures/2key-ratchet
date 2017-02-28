@@ -8,6 +8,7 @@
   "types": "index.d.ts",
   "scripts": {
     "test": "mocha out/test",
+    "install": "npm run build",
     "build": "npm run build:dist",
     "build:es5": "tsc",
     "build:dist": "npm run build:lib && npm run build:module",
