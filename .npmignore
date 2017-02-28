@@ -2,7 +2,7 @@
 coverage
 node_modules
 out
-src
+# src
 /src/test*.ts
 cSpell.json
 circle.yml
