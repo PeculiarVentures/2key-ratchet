@@ -6,5 +6,5 @@ src
 /src/test*.ts
 cSpell.json
 circle.yml
-rollup.*.js
-ts*.json
+# rollup.*.js
+# ts*.json
