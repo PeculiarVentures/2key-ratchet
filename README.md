@@ -16,6 +16,27 @@ See the [ARCHITECTURE](https://github.com/PeculiarVentures/2key-ratchet/blob/mas
 
 For licensing information, see the [LICENSE](https://github.com/PeculiarVentures/2key-ratchet/blob/master/LICENSE.md) file.
 
+## Overview
+
+### IdentityKeys
+
+Each peer in the protocol has an `IdentityKey`. These keys are used to authenticate `PreKeys`. `IdentityKeys` are similar to the public key in an X.509 certificate.
+
+### ExchangeKeys
+
+ExchangeKeys are introduced by `2key-ratchet`, they are used to derive `PreKeys`. The `ExchangeKey` is signed by a peers `IdentityKey`.
+
+### PreKeys
+
+The protocol uses a concept called 'PreKeys'. In `2key-ratchet` a PreKey is a secp256r1 public key with an associated unique id. These `PreKeys` are signed by the `IdentityKey`.
+
+On first use, clients generate a single signed PreKey, as well as a large list of unsigned PreKeys, and transmit all of them to a server.
+
+### Sessions
+
+The Double Ratchet protocol is session-oriented. Clients establish a "session," which is then used for all subsequent encrypt/decrypt operations. These sessions can remain open and re-used, they do not need to be torn down since each message is encrypted with a new and unique cryptographic key`
+
+
 ## Instructions
 
 ### Installation
