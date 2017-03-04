@@ -16,6 +16,31 @@ See the [ARCHITECTURE](https://github.com/PeculiarVentures/2key-ratchet/blob/mas
 
 For licensing information, see the [LICENSE](https://github.com/PeculiarVentures/2key-ratchet/blob/master/LICENSE.md) file.
 
+## Overview
+
+### IdentityKeys
+
+Each peer in the protocol has an `IdentityKey`. These keys are used to authenticate `PreKeys`. `IdentityKeys` are used similarly to the public key in an X.509 certificate.
+
+### ExchangeKeys
+
+ExchangeKeys are introduced by `2key-ratchet`, they are used to derive `PreKeys`. The `ExchangeKey` is signed by a peers `IdentityKey`.
+
+### PreKeys
+
+In `2key-ratchet` a PreKey is a secp256r1 public key with an associated unique id. These `PreKeys` are signed by the `IdentityKey`.
+
+On first use, clients generate a single signed PreKey, as well as a large list of unsigned PreKeys, and transmit all of them to a server.
+
+### Server
+
+The server in the protocol is an untrusted entity, it simply stores preKeys for retrieval when the peer may be offline and unreachable.
+
+### Sessions
+
+The Double Ratchet protocol is session-oriented. Peers establish a `session` with each other, this is then used for all subsequent exchanges. These sessions can remain open and be re-used since each message is encrypted with a new and unique cryptographic key.
+
+
 ## Instructions
 
 ### Installation
@@ -33,7 +58,7 @@ npm install 2key-ratchet
 
 ### Usage
 
-First you need to require the library:
+Include `2key-ratchet` in your application.
 
 NODEJS:
 
@@ -51,7 +76,7 @@ __NOTE:__ You will also have to import [tslib](https://github.com/Microsoft/tsli
 
 The `DKeyRatchet` namespace will always be available globally and also supports AMD loaders.
 
-Then generate an Identity Key:
+#### Generate an IdentityKey
 
 ```javascript
 let AliceID;
@@ -61,6 +86,7 @@ DKeyRatchet.Identity.create(16453);
     });
 ```
 
+#### Generate and sign your PreKeys
 You will also need to create your signed PreKeys:
 
 ```javascript
@@ -105,7 +131,7 @@ DKeyRatchet.PreKeyBundleProtocol.importProtocol(ab)
     })
 ```
 
-Start a session using the PreKey message bundle:
+#### Create a session
 
 ```javascript
 DKeyRatchet.AsymmetricRatchet.create(BobID, bundle)
