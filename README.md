@@ -28,7 +28,7 @@ ExchangeKeys are introduced by `2key-ratchet`, they are used to derive `PreKeys`
 
 ### PreKeys
 
-The protocol uses a concept called 'PreKeys'. In `2key-ratchet` a PreKey is a secp256r1 public key with an associated unique id. These `PreKeys` are signed by the `IdentityKey`.
+In `2key-ratchet` a PreKey is a secp256r1 public key with an associated unique id. These `PreKeys` are signed by the `IdentityKey`.
 
 On first use, clients generate a single signed PreKey, as well as a large list of unsigned PreKeys, and transmit all of them to a server.
 
