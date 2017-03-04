@@ -54,7 +54,7 @@ npm install 2key-ratchet
 
 ### Usage
 
-First you need to require the library:
+Include `2key-ratchet` in your application.
 
 NODEJS:
 
