@@ -78,6 +78,8 @@ The `DKeyRatchet` namespace will always be available globally and also supports 
 
 #### Generate an IdentityKey
 
+The first step is to create an IdentityKey.
+
 ```javascript
 let AliceID;
 DKeyRatchet.Identity.create(16453);
@@ -96,7 +98,7 @@ DKeyRatchet.PreKey.create(1)
     });
 ```
 
-Create your PreKey message bundle:
+Then create your PreKey message bundle:
 
 ```javascript
 let bundle = new DKeyRatchet.PreKeyBundleProtocol();
@@ -117,7 +119,7 @@ bundle.identity.fill(AliceID)
     });
 ``` 
 
-Import the generated PreKey message bundle:
+And then import the generated PreKey message bundle:
 
 ```javascript
 DKeyRatchet.PreKeyBundleProtocol.importProtocol(ab)
@@ -127,11 +129,12 @@ DKeyRatchet.PreKeyBundleProtocol.importProtocol(ab)
     })
     .then((trusted) => {
         if (!trusted)
-            throw new Error("PreKey is not trusted");
+            throw new Error("Error: The PreKey is not trusted");
     })
 ```
 
 #### Create a session
+With the previous steps complete you can now create a session:
 
 ```javascript
 DKeyRatchet.AsymmetricRatchet.create(BobID, bundle)
