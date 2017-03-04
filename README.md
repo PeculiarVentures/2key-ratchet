@@ -40,6 +40,14 @@ The server in the protocol is an untrusted entity, it simply stores preKeys for 
 
 The Double Ratchet protocol is session-oriented. Peers establish a `session` with each other, this is then used for all subsequent exchanges. These sessions can remain open and be re-used since each message is encrypted with a new and unique cryptographic key.
 
+## Size and Dependencies
+
+| Name            | Size   | Description                                    |
+|-----------------|--------|------------------------------------------------|
+| 2key-ratchet.js |  66 Kb | UMD module without external modules            | 
+
+__NOTE:__ You will also have to import [tslib](https://github.com/Microsoft/tslib) and [protobufjs](https://github.com/dcodeIO/ProtoBuf.js/#browsers) for use in the browser.
+
 
 ## Instructions
 
@@ -49,16 +57,10 @@ The Double Ratchet protocol is session-oriented. Peers establish a `session` wit
 npm install 2key-ratchet
 ```
 
-### Size
-
-| Name            | Size   | Description                                    |
-|-----------------|--------|------------------------------------------------|
-| 2key-ratchet.js |  66 Kb | UMD module without external modules            | 
-
 
 ### Usage
 
-Include `2key-ratchet` in your application.
+Include `2key-ratchet` and its dependencies in your application.
 
 NODEJS:
 
@@ -72,7 +74,6 @@ BROWSER:
 <script src="2key-ratchet.js"></script>
 ```
 
-__NOTE:__ You will also have to import [tslib](https://github.com/Microsoft/tslib) and [protobufjs](https://github.com/dcodeIO/ProtoBuf.js/#browsers) for use in the browser.
 
 The `DKeyRatchet` namespace will always be available globally and also supports AMD loaders.
 
