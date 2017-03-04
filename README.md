@@ -38,7 +38,7 @@ The server in the protocol is an untrusted entity, it simply stores preKeys for 
 
 ### Sessions
 
-The Double Ratchet protocol is session-oriented. Peers establish a `session` with each other, this is then used for all subsequent encrypt/decrypt operations. These sessions can remain open and be re-used since each message is encrypted with a new and unique cryptographic key.
+The Double Ratchet protocol is session-oriented. Peers establish a `session` with each other, this is then used for all subsequent exchanges. These sessions can remain open and be re-used since each message is encrypted with a new and unique cryptographic key.
 
 
 ## Instructions
