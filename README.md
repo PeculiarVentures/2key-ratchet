@@ -76,7 +76,7 @@ __NOTE:__ You will also have to import [tslib](https://github.com/Microsoft/tsli
 
 The `DKeyRatchet` namespace will always be available globally and also supports AMD loaders.
 
-Then generate an Identity Key:
+#### Generate an IdentityKey
 
 ```javascript
 let AliceID;
@@ -86,6 +86,7 @@ DKeyRatchet.Identity.create(16453);
     });
 ```
 
+#### Generate and sign your PreKeys
 You will also need to create your signed PreKeys:
 
 ```javascript
@@ -130,7 +131,7 @@ DKeyRatchet.PreKeyBundleProtocol.importProtocol(ab)
     })
 ```
 
-Start a session using the PreKey message bundle:
+#### Create a session
 
 ```javascript
 DKeyRatchet.AsymmetricRatchet.create(BobID, bundle)
