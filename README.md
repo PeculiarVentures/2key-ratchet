@@ -20,7 +20,8 @@ For licensing information, see the [LICENSE](https://github.com/PeculiarVentures
 
 ### IdentityKeys
 
-Each peer in the protocol has an `IdentityKey`, these are secp256r1 keys. These keys are used to authenticate `PreKeys`. `IdentityKeys` are used similarly to the public key in an X.509 certificate.
+Each peer in the protocol has an `IdentityKey`, these are secp256r1 keys. These keys are used to authenticate both `PreKeys` and `ExchangeKeys`. `IdentityKeys` are used similarly to the public key in an X.509 certificate.
+
 
 ### ExchangeKeys
 
