@@ -14,6 +14,8 @@ There are a few [differences](https://github.com/PeculiarVentures/2key-ratchet/b
 
 See the [ARCHITECTURE](https://github.com/PeculiarVentures/2key-ratchet/blob/master/ARCHITECTURE.md) file to better understand the library structure.
 
+For ideas on where you might use `2key-ratchet` see the [SCENARIOS](https://github.com/PeculiarVentures/2key-ratchet/blob/master/SCENARIOS.md) document.
+
 For licensing information, see the [LICENSE](https://github.com/PeculiarVentures/2key-ratchet/blob/master/LICENSE.md) file.
 
 ## Overview
