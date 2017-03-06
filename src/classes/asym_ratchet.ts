@@ -2,7 +2,7 @@
  * 
  * 2key-ratchet
  * Copyright (c) 2016 Peculiar Ventures, Inc
- * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and 
+ * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and
  * https://whispersystems.org/docs/specifications/x3dh/ by Open Whisper Systems
  * 
  */
@@ -26,14 +26,14 @@ import { ECDHPrivateKey, ECDHPublicKey, HMACCryptoKey } from "./type";
  * https://whispersystems.org/docs/specifications/x3dh/#sending-the-initial-message
  * 
  * @static
- * @param {boolean} flag Sets order for auth mechanism. 
+ * @param {boolean} flag Sets order for auth mechanism.
  * - If `true` then DH1 || DH2, otherwise DH2 || DH1
  * @param {Identity} IKA
  * @param {ECKeyPair} EKA
  * @param {RemoteIdentity} IKB Bob's identity key IKB
  * @param {ECPublicKey} SPKB Bob's signed prekey SPKB
  * @param {ECPublicKey} [OPKB] Bob's one-time prekey OPKB. Optionally
- * 
+ *
  */
 async function authenticate(flag: boolean, IKa: Identity, EKa: ECKeyPair, IKb: ECPublicKey, SPKb: ECPublicKey, OPKb?: ECPublicKey) {
     /**
@@ -68,7 +68,7 @@ export interface IJsonAsymmetricRatchet {
 /**
  * Implementation Diffie-Hellman ratchet
  * https://whispersystems.org/docs/specifications/doubleratchet/#diffie-hellman-ratchet
- * 
+ *
  * @export
  * @class AsymmetricRatchet
  */
@@ -76,12 +76,12 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
 
     /**
      * Creates new ratchet for given identity from PreKeyBundle or PreKey messages
-     * 
+     *
      * @static
      * @param {Identity} identity
      * @param {(PreKeyBundleProtocol | PreKeyMessageProtocol)} protocol
      * @returns
-     * 
+     *
      * @memberOf AsymmetricRatchet
      */
     public static async create(identity: Identity, protocol: PreKeyBundleProtocol | PreKeyMessageProtocol) {
@@ -168,8 +168,7 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
     protected steps = new DHRatchetStepStack(MAX_RATCHET_STACK_SIZE);
     protected promises: { [key: string]: Promise<any> } = {};
 
-    // tslint:disable-next-line:no-empty
-    private constructor() {
+    protected constructor() {
         super();
     }
 
@@ -186,11 +185,11 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
     }
 
     /**
-     * Verifies and decrypts data from SignedMessage  
-     * 
+     * Verifies and decrypts data from SignedMessage
+     *
      * @param {MessageSignedProtocol} protocol
      * @returns
-     * 
+     *
      * @memberOf AsymmetricRatchet
      */
     public async decrypt(protocol: MessageSignedProtocol) {
@@ -234,10 +233,10 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
 
     /**
      * Encrypts message
-     * 
+     *
      * @param {ArrayBuffer} message
      * @returns
-     * 
+     *
      * @memberOf AsymmetricRatchet
      */
     public async encrypt(message: ArrayBuffer) {
@@ -332,10 +331,10 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
 
     /**
      * Generate new ratchet key
-     * 
+     *
      * @protected
      * @returns
-     * 
+     *
      * @memberOf AsymmetricRatchet
      */
     protected generateRatchetKey() {
@@ -344,13 +343,13 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
 
     /**
      * Creates new symmetric ratchet
-     * 
+     *
      * @protected
      * @param {ECDHPrivateKey} ourRatchetKey
      * @param {ECPublicKey} theirRatchetKey
      * @param {typeof ReceivingRatchet} ratchetClass
      * @returns {Promise<ReceivingRatchet>}
-     * 
+     *
      * @memberOf AsymmetricRatchet
      */
     protected async createChain(ourRatchetKey: ECDHPrivateKey, theirRatchetKey: ECPublicKey, ratchetClass: typeof ReceivingRatchet): Promise<ReceivingRatchet>;
@@ -387,7 +386,7 @@ export interface IJsonDHRatchetStep {
 
 /**
  * Implementation of step of the Diffie-Hellman ratchet
- * 
+ *
  * @export
  * @class DHRatchetStep
  */
@@ -401,7 +400,7 @@ export class DHRatchetStep implements IJsonSerializable {
 
     /**
      * Remote client's ratchet key
-     * 
+     *
      * @type {ECPublicKey}
      * @memberOf DHRatchetStep
      */
@@ -409,7 +408,7 @@ export class DHRatchetStep implements IJsonSerializable {
 
     /**
      * Sending chain
-     * 
+     *
      * @type {SendingRatchet}
      * @memberOf DHRatchetStep
      */
@@ -417,7 +416,7 @@ export class DHRatchetStep implements IJsonSerializable {
 
     /**
      * Receiving chain
-     * 
+     *
      * @type {ReceivingRatchet}
      * @memberOf DHRatchetStep
      */
@@ -453,7 +452,7 @@ export class DHRatchetStep implements IJsonSerializable {
 
 /**
  * Implements collection of DHRatchetStep
- * 
+ *
  * @export
  * @class DHRatchetStepStack
  * @extends {Stack<DHRatchetStep>}
@@ -464,7 +463,7 @@ export class DHRatchetStepStack extends Stack<DHRatchetStep> {
      * Returns DHRatchetStep by given remote client's ratchet key
      * @param {ECPublicKey} remoteRatchetKey remote client's ratchet key
      * @returns
-     * 
+     *
      * @memberOf DHRatchetStepStack
      */
     public getStep(remoteRatchetKey: ECPublicKey) {

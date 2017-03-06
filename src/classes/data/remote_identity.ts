@@ -1,10 +1,10 @@
 /**
- * 
+ *
  * 2key-ratchet
  * Copyright (c) 2016 Peculiar Ventures, Inc
- * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and 
+ * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and
  * https://whispersystems.org/docs/specifications/x3dh/ by Open Whisper Systems
- * 
+ *
  */
 
 import { Curve, ECPublicKey } from "../crypto";
@@ -16,7 +16,7 @@ export interface IJsonRemoteIdentity {
     id: number;
     /**
      * Thumbprint of signing key
-     * 
+     *
      * @type {string}
      * @memberOf IJsonRemoteIdentity
      */
@@ -24,6 +24,7 @@ export interface IJsonRemoteIdentity {
     signingKey: CryptoKey;
     exchangeKey: CryptoKey;
     signature: ArrayBuffer;
+    createdAt: string;
 }
 
 export class RemoteIdentity implements IJsonSerializable {
@@ -44,11 +45,13 @@ export class RemoteIdentity implements IJsonSerializable {
     public signingKey: ECPublicKey;
     public exchangeKey: ECPublicKey;
     public signature: ArrayBuffer;
+    public createdAt: Date;
 
     public fill(protocol: IdentityProtocol) {
         this.signingKey = protocol.signingKey;
         this.exchangeKey = protocol.exchangeKey;
         this.signature = protocol.signature;
+        this.createdAt = protocol.createdAt;
     }
 
     public verify() {
@@ -62,6 +65,7 @@ export class RemoteIdentity implements IJsonSerializable {
             signingKey: await this.signingKey.key,
             exchangeKey: await this.exchangeKey.key,
             signature: this.signature,
+            createdAt: this.createdAt.toISOString(),
         } as IJsonRemoteIdentity;
     }
 
@@ -70,6 +74,7 @@ export class RemoteIdentity implements IJsonSerializable {
         this.signature = obj.signature;
         this.signingKey = await ECPublicKey.create(obj.signingKey);
         this.exchangeKey = await ECPublicKey.create(obj.exchangeKey);
+        this.createdAt = new Date(obj.createdAt);
 
         // verify signature
         const ok = await this.verify();

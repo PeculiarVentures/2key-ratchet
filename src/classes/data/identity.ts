@@ -1,10 +1,10 @@
 /**
- * 
+ *
  * 2key-ratchet
  * Copyright (c) 2016 Peculiar Ventures, Inc
- * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and 
+ * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and
  * https://whispersystems.org/docs/specifications/x3dh/ by Open Whisper Systems
- * 
+ *
  */
 
 import { DH_ALGORITHM_NAME, SIGN_ALGORITHM_NAME } from "../const";
@@ -18,6 +18,7 @@ export interface IJsonIdentity {
     exchangeKey: CryptoKeyPair;
     preKeys: CryptoKeyPair[];
     signedPreKeys: CryptoKeyPair[];
+    createdAt: string;
 }
 
 export class Identity implements IJsonSerializable {
@@ -26,6 +27,7 @@ export class Identity implements IJsonSerializable {
         const signingKey = await Curve.ecKeyPairFromJson(obj.signingKey);
         const exchangeKey = await Curve.ecKeyPairFromJson(obj.exchangeKey);
         const res = new this(obj.id, signingKey, exchangeKey);
+        res.createdAt = new Date(obj.createdAt);
         await res.fromJSON(obj);
         return res;
     }
@@ -34,6 +36,7 @@ export class Identity implements IJsonSerializable {
         const signingKey = await Curve.generateKeyPair(SIGN_ALGORITHM_NAME);
         const exchangeKey = await Curve.generateKeyPair(DH_ALGORITHM_NAME);
         const res = new Identity(id, signingKey, exchangeKey);
+        res.createdAt = new Date();
         // generate preKey
         for (let i = 0; i < preKeyAmount; i++) {
             res.preKeys.push(await Curve.generateKeyPair("ECDH"));
@@ -48,11 +51,12 @@ export class Identity implements IJsonSerializable {
     public id: number;
     public signingKey: ECKeyPair;
     public exchangeKey: ECKeyPair;
+    public createdAt: Date;
 
     public preKeys: ECKeyPair[];
     public signedPreKeys: ECKeyPair[];
 
-    public constructor(id: number, signingKey: ECKeyPair, exchangeKey: ECKeyPair) {
+    protected constructor(id: number, signingKey: ECKeyPair, exchangeKey: ECKeyPair) {
         this.id = id;
         this.signingKey = signingKey;
         this.exchangeKey = exchangeKey;
@@ -75,6 +79,7 @@ export class Identity implements IJsonSerializable {
             exchangeKey: await Curve.ecKeyPairToJson(this.exchangeKey),
             preKeys,
             signedPreKeys,
+            createdAt: this.createdAt.toISOString(),
         } as IJsonIdentity;
     }
 

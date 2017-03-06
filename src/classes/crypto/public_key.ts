@@ -1,10 +1,10 @@
 /**
- * 
+ *
  * 2key-ratchet
  * Copyright (c) 2016 Peculiar Ventures, Inc
- * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and 
+ * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and
  * https://whispersystems.org/docs/specifications/x3dh/ by Open Whisper Systems
- * 
+ *
  */
 
 import { Convert, isEqual } from "pvtsutils";
@@ -15,7 +15,7 @@ import { Secret } from "./secret";
 
 /**
  * Implementation of EC public key
- * 
+ *
  * @export
  * @class ECPublicKey
  */
@@ -23,11 +23,11 @@ export class ECPublicKey {
 
     /**
      * Creates new instance of ECPublicKey from CryptoKey
-     * 
+     *
      * @static
      * @param {CryptoKey} publicKey
      * @returns
-     * 
+     *
      * @memberOf ECPublicKey
      */
     public static async create(publicKey: CryptoKey) {
@@ -54,12 +54,12 @@ export class ECPublicKey {
 
     /**
      * Creates ECPublicKey from raw data
-     * 
+     *
      * @static
      * @param {ArrayBuffer} bytes
      * @param {ECKeyType} type type of EC key. ECDSA | ECDH
      * @returns
-     * 
+     *
      * @memberOf ECPublicKey
      */
     public static async importKey(bytes: ArrayBuffer, type: ECKeyType) {
@@ -81,7 +81,7 @@ export class ECPublicKey {
     /**
      * Identity of ECPublicKey
      * HEX string of thumbprint of EC key
-     * 
+     *
      * @type {string}
      * @memberOf ECPublicKey
      */
@@ -89,7 +89,7 @@ export class ECPublicKey {
 
     /**
      * Crypto key
-     * 
+     *
      * @type {CryptoKey}
      * @memberOf ECPublicKey
      */
@@ -97,7 +97,7 @@ export class ECPublicKey {
 
     /**
      * raw data of key
-     * 
+     *
      * @protected
      * @type {ArrayBuffer}
      * @memberOf ECPublicKey
@@ -106,9 +106,9 @@ export class ECPublicKey {
 
     /**
      * Returns key in raw format
-     * 
+     *
      * @returns
-     * 
+     *
      * @memberOf ECPublicKey
      */
     public serialize() {
@@ -116,24 +116,24 @@ export class ECPublicKey {
     }
 
     /**
-     * Returns SHA-1 digest of key
-     * 
+     * Returns SHA-256 digest of key
+     *
      * @returns
-     * 
+     *
      * @memberOf ECPublicKey
      */
     public async thumbprint() {
         const bytes = await this.serialize();
-        const thumbprint = await Secret.digest("SHA-1", bytes);
+        const thumbprint = await Secret.digest("SHA-256", bytes);
         return Convert.ToHex(thumbprint);
     }
 
     /**
-     * Returns `true` if current is equal to given parameter 
-     * 
+     * Returns `true` if current is equal to given parameter
+     *
      * @param {*} other
      * @returns
-     * 
+     *
      * @memberOf ECPublicKey
      */
     public async isEqual(other: any) {

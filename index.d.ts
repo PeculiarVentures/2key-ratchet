@@ -270,6 +270,7 @@ declare namespace DKeyRatchet {
         exchangeKey: CryptoKeyPair;
         preKeys: CryptoKeyPair[];
         signedPreKeys: CryptoKeyPair[];
+        createdAt: string;
     }
 
     export class Identity implements IJsonSerializable {
@@ -280,7 +281,8 @@ declare namespace DKeyRatchet {
         exchangeKey: ECKeyPair;
         preKeys: ECKeyPair[];
         signedPreKeys: ECKeyPair[];
-        constructor(id: number, signingKey: ECKeyPair, exchangeKey: ECKeyPair);
+        createdAt: Date;
+        protected constructor(id: number, signingKey: ECKeyPair, exchangeKey: ECKeyPair);
         public toJSON(): Promise<IJsonIdentity>;
         public fromJSON(obj: IJsonIdentity): Promise<void>;
     }
@@ -297,6 +299,7 @@ declare namespace DKeyRatchet {
         signingKey: CryptoKey;
         exchangeKey: CryptoKey;
         signature: ArrayBuffer;
+        createdAt: string;
     }
 
     export class RemoteIdentity implements IJsonSerializable {
@@ -306,6 +309,7 @@ declare namespace DKeyRatchet {
         signingKey: ECPublicKey;
         exchangeKey: ECPublicKey;
         signature: ArrayBuffer;
+        createdAt: Date;
         fill(protocol: IdentityProtocol): void;
         verify(): PromiseLike<boolean>;
         toJSON(): Promise<IJsonRemoteIdentity>;
@@ -323,6 +327,7 @@ declare namespace DKeyRatchet {
         signingKey: ECPublicKey;
         exchangeKey: ECPublicKey;
         signature: ArrayBuffer;
+        createdAt: Date;
         sign(key: CryptoKey): Promise<void>;
         verify(): Promise<boolean>;
         fill(identity: Identity): Promise<void>;
@@ -448,7 +453,7 @@ declare namespace DKeyRatchet {
         currentStep: DHRatchetStep;
         currentRatchetKey: ECKeyPair;
         protected steps: DHRatchetStepStack;
-        private constructor();
+        protected constructor();
 
         public on(event: "update", listener: () => void): this;
         public once(event: "update", listener: () => void): this;
