@@ -88,7 +88,7 @@ declare namespace DKeyRatchet {
          */
         serialize(): ArrayBuffer;
         /**
-         * Returns SHA-1 digest of key
+         * Returns SHA-256 digest of key
          *
          * @returns
          *
