@@ -194,7 +194,7 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
      */
     public async decrypt(protocol: MessageSignedProtocol) {
         // console.info(`${this.constructor.name}:Decrypts message`);
-        return this.queuePromise("encrypt", async () => {
+        return this.queuePromise("decrypt", async () => {
             const remoteRatchetKey = protocol.message.senderRatchetKey;
             const message = protocol.message;
 
@@ -469,7 +469,7 @@ export class DHRatchetStepStack extends Stack<DHRatchetStep> {
     public getStep(remoteRatchetKey: ECPublicKey) {
         let found: DHRatchetStep = void 0;
         this.items.some((step) => {
-            if (step.remoteRatchetKey === remoteRatchetKey) {
+            if (step.remoteRatchetKey.id === remoteRatchetKey.id) {
                 found = step;
             }
             return !!found;
