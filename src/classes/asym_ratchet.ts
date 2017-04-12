@@ -194,7 +194,7 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
      */
     public async decrypt(protocol: MessageSignedProtocol) {
         // console.info(`${this.constructor.name}:Decrypts message`);
-        return this.queuePromise("decrypt", async () => {
+        return this.queuePromise("encrypt", async () => {
             const remoteRatchetKey = protocol.message.senderRatchetKey;
             const message = protocol.message;
 
