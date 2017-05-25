@@ -1,10 +1,10 @@
 /**
- * 
+ *
  * 2key-ratchet
  * Copyright (c) 2016 Peculiar Ventures, Inc
  * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and
  * https://whispersystems.org/docs/specifications/x3dh/ by Open Whisper Systems
- * 
+ *
  */
 
 import { EventEmitter } from "events";
@@ -22,9 +22,9 @@ import { ECDHPrivateKey, ECDHPublicKey, HMACCryptoKey } from "./type";
 
 /**
  * Authentication. Calculates rootKey for DH ratchet
- * 
+ *
  * https://whispersystems.org/docs/specifications/x3dh/#sending-the-initial-message
- * 
+ *
  * @static
  * @param {boolean} flag Sets order for auth mechanism.
  * - If `true` then DH1 || DH2, otherwise DH2 || DH1

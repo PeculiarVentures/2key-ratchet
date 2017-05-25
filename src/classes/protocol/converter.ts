@@ -16,7 +16,7 @@ export class ECDSAPublicKeyConverter {
     }
     public static async get(value: Uint8Array) {
         return ECPublicKey.importKey(value.buffer, "ECDSA");
-    };
+    }
 }
 
 export class ECDHPublicKeyConverter {
@@ -25,7 +25,7 @@ export class ECDHPublicKeyConverter {
     }
     public static async get(value: Uint8Array) {
         return ECPublicKey.importKey(value.buffer, "ECDH");
-    };
+    }
 }
 
 export class DateConverter {
@@ -34,5 +34,5 @@ export class DateConverter {
     }
     public static async get(value: Uint8Array) {
         return new Date(Convert.ToString(value));
-    };
+    }
 }

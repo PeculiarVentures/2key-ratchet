@@ -11,6 +11,8 @@
         "object-literal-sort-keys": false,
         "no-bitwise": false,
         "forin": false,
+        "unified-signatures": false,
+        "ban-types": false,
         "max-line-length": [
             false
         ],

@@ -6,3 +6,6 @@
 /dist
 /src/test*.ts
 cSpell.json
+
+# MAC OS
+.DS_Store

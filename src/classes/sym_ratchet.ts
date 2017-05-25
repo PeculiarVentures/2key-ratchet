@@ -1,10 +1,10 @@
 /**
- * 
+ *
  * 2key-ratchet
  * Copyright (c) 2016 Peculiar Ventures, Inc
- * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and 
+ * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and
  * https://whispersystems.org/docs/specifications/x3dh/ by Open Whisper Systems
- * 
+ *
  */
 
 import { Convert } from "pvtsutils";
@@ -19,7 +19,7 @@ const ROOT_KEY_KDF_INPUT = new Uint8Array([2]).buffer;
 
 /**
  * Encrypt/Decrypt result for Symmetric ratchets
- * 
+ *
  * @export
  * @interface CipherMessage
  */
@@ -73,11 +73,11 @@ export abstract class SymmetricRatchet implements IJsonSerializable {
     /**
      * calculates new keys by rootKey KDF_CK(ck)
      * https://whispersystems.org/docs/specifications/doubleratchet/#external-functions
-     * 
+     *
      * @protected
      * @param {CryptoKey} rootKey
      * @returns
-     * 
+     *
      * @memberOf SymmetricRatchet
      */
     protected async calculateKey(rootKey: CryptoKey) {
@@ -93,10 +93,10 @@ export abstract class SymmetricRatchet implements IJsonSerializable {
 
     /**
      * Move to next step of ratchet
-     * 
+     *
      * @protected
      * @returns
-     * 
+     *
      * @memberOf SymmetricRatchet
      */
     protected async click() {
@@ -111,7 +111,7 @@ export abstract class SymmetricRatchet implements IJsonSerializable {
 
 /**
  * Implementation of Sending chain
- * 
+ *
  * @export
  * @class SendingRatchet
  * @extends {SymmetricRatchet}
@@ -120,10 +120,10 @@ export class SendingRatchet extends SymmetricRatchet {
 
     /**
      * Encrypts message
-     * 
+     *
      * @param {ArrayBuffer} message
      * @returns CipherMessage type
-     * 
+     *
      * @memberOf SendingRatchet
      */
     public async encrypt(message: ArrayBuffer) {

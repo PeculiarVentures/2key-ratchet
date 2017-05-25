@@ -1,10 +1,10 @@
 /**
- * 
+ *
  * 2key-ratchet
  * Copyright (c) 2016 Peculiar Ventures, Inc
- * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and 
+ * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and
  * https://whispersystems.org/docs/specifications/x3dh/ by Open Whisper Systems
- * 
+ *
  */
 
 import { combine, Convert } from "pvtsutils";
@@ -20,11 +20,11 @@ export class Secret {
 
     /**
      * Returns ArrayBuffer of random bytes
-     * 
+     *
      * @static
      * @param {number} size size of output buffer
      * @returns
-     * 
+     *
      * @memberOf Secret
      */
     public static randomBytes(size: number) {
@@ -35,12 +35,12 @@ export class Secret {
 
     /**
      * Calculates digest
-     * 
+     *
      * @static
      * @param {string} alg
      * @param {ArrayBuffer} message
      * @returns
-     * 
+     *
      * @memberOf Secret
      */
     public static digest(alg: string, message: ArrayBuffer) {
@@ -49,13 +49,13 @@ export class Secret {
 
     /**
      * Encrypts data
-     * 
+     *
      * @static
      * @param {CryptoKey} key
      * @param {ArrayBuffer} data
      * @param {ArrayBuffer} iv
      * @returns
-     * 
+     *
      * @memberOf Secret
      */
     public static encrypt(key: CryptoKey, data: ArrayBuffer, iv: ArrayBuffer) {
@@ -64,13 +64,13 @@ export class Secret {
 
     /**
      * Decrypts data
-     * 
+     *
      * @static
      * @param {CryptoKey} key
      * @param {ArrayBuffer} data
      * @param {ArrayBuffer} iv
      * @returns
-     * 
+     *
      * @memberOf Secret
      */
     public static decrypt(key: CryptoKey, data: ArrayBuffer, iv: ArrayBuffer) {
@@ -79,11 +79,11 @@ export class Secret {
 
     /**
      * Creates HMAC key from raw data
-     * 
+     *
      * @static
      * @param {ArrayBuffer} raw
      * @returns
-     * 
+     *
      * @memberOf Secret
      */
     public static importHMAC(raw: ArrayBuffer) {
@@ -94,11 +94,11 @@ export class Secret {
 
     /**
      * Creates AES key from raw data
-     * 
+     *
      * @static
      * @param {ArrayBuffer} raw
      * @returns
-     * 
+     *
      * @memberOf Secret
      */
     public static importAES(raw: ArrayBuffer) {
@@ -108,12 +108,12 @@ export class Secret {
 
     /**
      * Calculates signature
-     * 
+     *
      * @static
      * @param {CryptoKey} key
      * @param {ArrayBuffer} data
      * @returns
-     * 
+     *
      * @memberOf Secret
      */
     public static async sign(key: CryptoKey, data: ArrayBuffer) {
@@ -122,7 +122,7 @@ export class Secret {
 
     /**
      * HKDF rfc5869
-     * 
+     *
      * @static
      * @param {ArrayBuffer} IKM input keying material
      * @param {number} [keysCount] amount of calculated keys
@@ -130,7 +130,7 @@ export class Secret {
      * - if not provided, it is set to a string of HashLen zeros.
      * @param {any} [info=new ArrayBuffer(0)]
      * @returns
-     * 
+     *
      * @memberOf AsymmetricRatchet
      */
     public static async HKDF(IKM: ArrayBuffer, keysCount = 1, salt?: HMACCryptoKey, info = new ArrayBuffer(0)) {
@@ -147,7 +147,7 @@ export class Secret {
          * N = ceil(L/HashLen)
          * T = T(1) | T(2) | T(3) | ... | T(N)
          * OKM = first L octets of T
-         * 
+         *
          * where:
          * T(0) = empty string (zero length)
          * T(1) = HMAC-Hash(PRK, T(0) | info | 0x01)

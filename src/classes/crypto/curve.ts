@@ -1,10 +1,10 @@
 /**
- * 
+ *
  * 2key-ratchet
  * Copyright (c) 2016 Peculiar Ventures, Inc
- * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and 
+ * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and
  * https://whispersystems.org/docs/specifications/x3dh/ by Open Whisper Systems
- * 
+ *
  */
 
 import { ECDHPrivateKey, ECKeyType } from "../type";
@@ -19,11 +19,11 @@ export class Curve {
 
     /**
      * Generates new EC key pair
-     * 
+     *
      * @static
      * @param {ECKeyType} type type of EC key. ECDSA | ECDH
      * @returns
-     * 
+     *
      * @memberOf Curve
      */
     public static async generateKeyPair(type: ECKeyType) {
@@ -40,12 +40,12 @@ export class Curve {
 
     /**
      * Derives 32 bytes from EC keys
-     * 
+     *
      * @static
      * @param {ECDHPrivateKey} privateKey EC private key
      * @param {ECPublicKey} publicKey EC public key
      * @returns
-     * 
+     *
      * @memberOf Curve
      */
     public static deriveBytes(privateKey: ECDHPrivateKey, publicKey: ECPublicKey) {
@@ -54,13 +54,13 @@ export class Curve {
 
     /**
      * Verifies signature
-     * 
+     *
      * @static
      * @param {ECPublicKey} signingKey
      * @param {ArrayBuffer} message
      * @param {ArrayBuffer} signature
      * @returns
-     * 
+     *
      * @memberOf Curve
      */
     public static verify(signingKey: ECPublicKey, message: ArrayBuffer, signature: ArrayBuffer) {
@@ -69,12 +69,12 @@ export class Curve {
 
     /**
      * Calculates signature
-     * 
+     *
      * @static
      * @param {ECDHPrivateKey} signingKey
      * @param {ArrayBuffer} message
      * @returns
-     * 
+     *
      * @memberOf Curve
      */
     public static async sign(signingKey: ECDHPrivateKey, message: ArrayBuffer) {

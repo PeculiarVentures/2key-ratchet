@@ -1,10 +1,21 @@
+
+# VS Code
+.vscode
+
+# coverall
 .nyc_output
 coverage
+
+# npm
 node_modules
+
+# build
 out
-# src
-/src/test*.ts
+src
 cSpell.json
 circle.yml
-# rollup.*.js
-# ts*.json
+rollup.*.js
+ts*.json
+
+# MAC OS
+.DS_Store

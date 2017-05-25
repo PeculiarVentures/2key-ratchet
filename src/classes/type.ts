@@ -19,7 +19,7 @@ export interface Identity {
      */
     id: string;
     /**
-     * Remote client's 
+     * Remote client's
      */
     key: ECDSAPublicKey;
 }

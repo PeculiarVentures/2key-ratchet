@@ -7,15 +7,16 @@
   "jsnext:main": "dist/2key-ratchet.lib.js",
   "types": "index.d.ts",
   "scripts": {
+    "pretest": "npm run tslint",
     "test": "mocha out/test",
-    "install": "npm run build",
     "build": "npm run build:dist",
     "build:es5": "tsc",
     "build:dist": "npm run build:lib && npm run build:module",
     "build:module": "rollup -c",
     "build:lib": "rollup -c rollup.config.lib.js",
     "build:map": "tsc --sourceMap",
-    "prepublish": "npm run build",
+    "prepub": "npm run build",
+    "tslint": "tslint 'src/**/*.ts'",
     "pub": "npm version patch && npm publish && git push",
     "sync": "git ac && git pull --rebase && git push",
     "precoverage": "npm run build:map",
@@ -35,26 +36,26 @@
   ],
   "license": "https://github.com/PeculiarVentures/2key-ratchet/blob/master/LICENSE.md",
   "dependencies": {
-    "protobufjs": "^6.6.3",
-    "tsprotobuf": "^1.0.2",
+    "node-webcrypto-ossl": "^1.0.23",
+    "protobufjs": "^6.7.3",
     "pvtsutils": "^1.0.2",
-    "tslib": "^1.5.0"
+    "tslib": "^1.7.1",
+    "tsprotobuf": "^1.0.7"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.38",
-    "@types/node": "^7.0.2",
+    "@types/node": "^7.0.22",
     "chai": "^3.5.0",
-    "live-server": "^1",
-    "mocha": "^3.2.0",
-    "node-webcrypto-ossl": "^1.0.17",
+    "live-server": "^1.2.0",
+    "mocha": "^3.4.2",
     "npm-run-all": "^3",
     "nyc": "^8",
-    "rollup": "^0.41.4",
-    "rollup-plugin-node-builtins": "^2.1.0",
-    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup": "^0.41.6",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-typescript": "^0.8.1",
-    "typescript": "^2",
-    "watch": "^0"
+    "typescript": "^2.3.3",
+    "watch": "^1.0.2"
   }
 }
