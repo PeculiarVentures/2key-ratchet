@@ -86,19 +86,9 @@ The first step is to create an IdentityKey.
 
 ```javascript
 let AliceID;
-DKeyRatchet.Identity.create(16453);
+DKeyRatchet.Identity.create(16453, 1, 1)
     .then((id) => {
         AliceID = id;
-    });
-```
-
-#### Generate and sign your PreKeys
-You will also need to create your signed PreKeys:
-
-```javascript
-DKeyRatchet.PreKey.create(1)
-    .then((preKey) => {
-        AliceID.signedPreKeys.save(preKey.id.toString(), preKey);
     });
 ```
 
@@ -110,26 +100,26 @@ let bundle = new DKeyRatchet.PreKeyBundleProtocol();
 bundle.identity.fill(AliceID)
     .then(() => {
         bundle.registrationId = AliceID.id;
-        const preKey = AliceID.signedPreKeys.load("1");
+        const preKey = AliceID.signedPreKeys[0];
         bundle.preKeySigned.id = 1;
-        bundle.preKeySigned.key = preKey.key.publicKey;
+        bundle.preKeySigned.key = preKey.publicKey;
         return bundle.preKeySigned.sign(AliceID.signingKey.privateKey);
     })
     .then(() => {
-        return bundle.exportProtocol();
+        return bundle.exportProto();
     })
     .then((ab) => {
-        console.log(ab); // ArrayBuffer {byteLength: 348}
+        console.log(ab); // ArrayBuffer { byteLength: 374 }
     });
 ``` 
 
 And then import the generated PreKey message bundle:
 
 ```javascript
-DKeyRatchet.PreKeyBundleProtocol.importProtocol(ab)
+DKeyRatchet.PreKeyBundleProtocol.importProto(ab)
     .then((bundle) => {
         // check signed prekey
-        return bundle.preKeySigned.verify(AliceID.signingKey.public);
+        return bundle.preKeySigned.verify(AliceID.signingKey.publicKey);
     })
     .then((trusted) => {
         if (!trusted)
@@ -140,29 +130,35 @@ DKeyRatchet.PreKeyBundleProtocol.importProtocol(ab)
 #### Create a session
 With the previous steps complete you can now create a session:
 
+> NOTE: For data conversion was used module `pvtsutils`. 
+
 ```javascript
 DKeyRatchet.AsymmetricRatchet.create(BobID, bundle)
     .then((cipher) => {
-        return cipher.encrypt(DKeyRatchet.Convert.FromUtf8String("Hello world!"));
+        return cipher.encrypt(Convert.FromUtf8String("Hello world!"));
     })
     .then((preKeyMessage) => {
-        return preKeyMessage.exportProtocol();
+        return preKeyMessage.exportProto();
     })
-    .then((ab) => {
-        console.log(ab); // ArrayBuffer {byteLength: 408}
+    .then((BobMessage) => {
+        console.log(BobMessage); // ArrayBuffer {byteLength: 408}
     });
 ```
 
 On the other side you would do the same:
 
 ```javascript
-DKeyRatchet.AsymmetricRatchet.create(AliceID, preKeyMessage)
-    .then((cipher) => {
-        return cipher.decrypt(preKeyMessage.signedMessage);
-    })
-    .then((message) => {
-        console.log(DKeyRatchet.Convert.ToUtf8String(message)); // Hello world!
-    })
+// Parse received bytes to proto
+return DKeyRatchet.PreKeyMessageProtocol.importProto(BobMessage)
+    .then((proto) => {
+        return DKeyRatchet.AsymmetricRatchet.create(AliceID, proto)
+            .then((cipher) => {
+                return cipher.decrypt(proto.signedMessage);
+            })
+            .then((message) => {
+                console.log(Convert.ToUtf8String(message)); // Hello world!
+            });
+    });
 ```
 
 We have a [complete example you can look at here](https://github.com/PeculiarVentures/2key-ratchet/tree/master/src/examples).
