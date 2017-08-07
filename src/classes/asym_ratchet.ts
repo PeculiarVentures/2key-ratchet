@@ -35,8 +35,10 @@ import { ECDHPrivateKey, ECDHPublicKey, HMACCryptoKey } from "./type";
  * @param {ECPublicKey} [OPKB] Bob's one-time prekey OPKB. Optionally
  *
  */
-async function authenticate(flag: boolean, IKa: Identity, EKa: ECKeyPair, IKb: ECPublicKey, SPKb: ECPublicKey, OPKb?: ECPublicKey) {
+async function authenticateA(IKa: Identity, EKa: ECKeyPair, IKb: ECPublicKey, SPKb: ECPublicKey, OPKb?: ECPublicKey) {
     /**
+     * If the bundle does not contain a one-time PreKey
+     *
      * DH1 = DH(IKa, SPKb)
      * DH2 = DH(EKa, IKb)
      * DH3 = DH(EKa, SPKb)
@@ -47,12 +49,46 @@ async function authenticate(flag: boolean, IKa: Identity, EKa: ECKeyPair, IKb: E
     const DH3 = await Curve.deriveBytes(EKa.privateKey, SPKb);
     let DH4 = new ArrayBuffer(0);
     if (OPKb) {
-        // DH4 = DH(EKA, OPKB)
+        /**
+         * If the bundle does contain a one-time PreKey,
+         * the calculation is modified to include an additional DH
+         *
+         * DH4 = DH(EKA, OPKB)
+         * SK = KDF(DH1 || DH2 || DH3 || DH4)
+         */
         DH4 = await Curve.deriveBytes(EKa.privateKey, OPKb);
     }
-    const DH = flag ? combine(DH1, DH2) : combine(DH2, DH1);
     const F = new Uint8Array(32).map(() => 0xff).buffer;
-    const KM = combine(F, DH, DH3, DH4); // TODO: F || KM, where F = 0xFF * N
+    const KM = combine(F, DH1, DH2, DH3, DH4); // TODO: F || KM, where F = 0xFF * N
+    const keys = await Secret.HKDF(KM, 1, void 0, INFO_TEXT);
+    return await Secret.importHMAC(keys[0]);
+}
+
+async function authenticateB(IKb: Identity, SPKb: ECKeyPair, IKa: ECPublicKey, EKa: ECPublicKey, OPKb?: ECDHPrivateKey) {
+    /**
+     * If the bundle does not contain a one-time PreKey
+     *
+     * DH1 = DH(IKa, SPKb)
+     * DH2 = DH(EKa, IKb)
+     * DH3 = DH(EKa, SPKb)
+     * SK = KDF(DH1 || DH2 || DH3)
+     */
+    const DH1 = await Curve.deriveBytes(SPKb.privateKey, IKa);
+    const DH2 = await Curve.deriveBytes(IKb.exchangeKey.privateKey, EKa);
+    const DH3 = await Curve.deriveBytes(SPKb.privateKey, EKa);
+    let DH4 = new ArrayBuffer(0);
+    if (OPKb) {
+        /**
+         * If the bundle does contain a one-time PreKey,
+         * the calculation is modified to include an additional DH
+         *
+         * DH4 = DH(EKA, OPKB)
+         * SK = KDF(DH1 || DH2 || DH3 || DH4)
+         */
+        DH4 = await Curve.deriveBytes(OPKb, EKa);
+    }
+    const F = new Uint8Array(32).map(() => 0xff).buffer;
+    const KM = combine(F, DH1, DH2, DH3, DH4); // TODO: F || KM, where F = 0xFF * N
     const keys = await Secret.HKDF(KM, 1, void 0, INFO_TEXT);
     return await Secret.importHMAC(keys[0]);
 }
@@ -108,8 +144,7 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
             ratchet.remotePreKeyId = protocol.preKey.id;
             ratchet.remotePreKeySignedId = protocol.preKeySigned.id;
 
-            rootKey = await authenticate(
-                true,
+            rootKey = await authenticateA(
                 identity, ratchet.currentRatchetKey,
                 protocol.identity.exchangeKey, protocol.preKeySigned.key, protocol.preKey.key);
         } else {
@@ -129,16 +164,13 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
 
             // get one-time prekey
             let preKey: ECKeyPair | undefined;
-            if (protocol.preKeyId) {
-                preKey = identity.preKeys[protocol.preKeyId];
-            }
+            preKey = identity.preKeys[protocol.preKeyId];
 
             ratchet.remoteIdentity = RemoteIdentity.fill(protocol.identity);
             ratchet.currentRatchetKey = signedPreKey;
-            rootKey = await authenticate(
-                false,
+            rootKey = await authenticateB(
                 identity, ratchet.currentRatchetKey,
-                protocol.identity.exchangeKey, protocol.signedMessage.message.senderRatchetKey, preKey && preKey.publicKey);
+                protocol.identity.exchangeKey, protocol.signedMessage.message.senderRatchetKey, preKey && preKey.privateKey);
 
         }
         // console.info(`${this.name}:Create Diffie-Hellman ratchet for ${identity.id}`);
