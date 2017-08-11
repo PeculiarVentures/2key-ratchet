@@ -4,7 +4,7 @@
 
   - **Native cryptographic implementations** that should be more resilient to subtle implementation issues such as side channels,
   - Ability to utilize **non-exportable keys** for both identity and authentication keys when used in the browser,
-  - The use of Web Crypto should also provide both **increased performance** and better battery life,
+  - The use of WebCrypto should also provide both **increased performance** and better battery life,
   - **Reduced bandwidth requirements** because the crypto implementation is available nativly,
   - **Keeping your identity and exchange keys on easily availble smart cards** like the YubiKey Neo which supports secp256r1.
 
