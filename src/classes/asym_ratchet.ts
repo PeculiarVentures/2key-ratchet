@@ -58,7 +58,11 @@ async function authenticateA(IKa: Identity, EKa: ECKeyPair, IKb: ECPublicKey, SP
          */
         DH4 = await Curve.deriveBytes(EKa.privateKey, OPKb);
     }
-    const F = new Uint8Array(32).map(() => 0xff).buffer;
+    const _F = new Uint8Array(32);
+    for (let i = 0; i < _F.length; i++) {
+        _F[i] = 0xff;
+    }
+    const F = _F.buffer;
     const KM = combine(F, DH1, DH2, DH3, DH4); // TODO: F || KM, where F = 0xFF * N
     const keys = await Secret.HKDF(KM, 1, void 0, INFO_TEXT);
     return await Secret.importHMAC(keys[0]);
@@ -87,7 +91,11 @@ async function authenticateB(IKb: Identity, SPKb: ECKeyPair, IKa: ECPublicKey, E
          */
         DH4 = await Curve.deriveBytes(OPKb, EKa);
     }
-    const F = new Uint8Array(32).map(() => 0xff).buffer;
+    const _F = new Uint8Array(32);
+    for (let i = 0; i < _F.length; i++) {
+        _F[i] = 0xff;
+    }
+    const F = _F.buffer;
     const KM = combine(F, DH1, DH2, DH3, DH4); // TODO: F || KM, where F = 0xFF * N
     const keys = await Secret.HKDF(KM, 1, void 0, INFO_TEXT);
     return await Secret.importHMAC(keys[0]);
