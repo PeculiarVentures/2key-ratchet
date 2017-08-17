@@ -41,12 +41,9 @@ export class ECPublicKey {
         }
         res.key = publicKey;
 
-        // Serialize public key to JWK
-        const jwk = await crypto.subtle.exportKey("jwk", publicKey);
-        const x = Convert.FromBase64Url(jwk.x);
-        const y = Convert.FromBase64Url(jwk.y);
-        const xy = Convert.ToBinary(x) + Convert.ToBinary(y);
-        res.serialized = Convert.FromBinary(xy);
+        // Serialize public key
+        const spki = await crypto.subtle.exportKey("raw", publicKey);
+        res.serialized = spki;
         res.id = await res.thumbprint();
 
         return res;
@@ -63,17 +60,9 @@ export class ECPublicKey {
      * @memberOf ECPublicKey
      */
     public static async importKey(bytes: ArrayBuffer, type: ECKeyType) {
-        const x = Convert.ToBase64Url(bytes.slice(0, 32));
-        const y = Convert.ToBase64Url(bytes.slice(32));
-        const jwk = {
-            kty: "EC",
-            crv: Curve.NAMED_CURVE,
-            x,
-            y,
-        };
         const usage = (type === "ECDSA" ? ["verify"] : []);
         const key = await crypto.subtle
-            .importKey("jwk", jwk, { name: type, namedCurve: Curve.NAMED_CURVE }, true, usage);
+        .importKey("raw", bytes, { name: type, namedCurve: Curve.NAMED_CURVE }, true, usage);
         const res = await ECPublicKey.create(key);
         return res;
     }
