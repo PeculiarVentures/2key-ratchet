@@ -9,7 +9,7 @@
 
 import { Convert, isEqual } from "pvtsutils";
 import { ECKeyType } from "../type";
-import crypto from "./crypto";
+import { getEngine } from "./crypto";
 import { Curve } from "./curve";
 import { Secret } from "./secret";
 
@@ -32,7 +32,7 @@ export class ECPublicKey {
      */
     public static async create(publicKey: CryptoKey) {
         const res = new this();
-        const algName = publicKey.algorithm.name.toUpperCase();
+        const algName = publicKey.algorithm.name!.toUpperCase();
         if (!(algName === "ECDH" || algName === "ECDSA")) {
             throw new Error("Error: Unsupported asymmetric key algorithm.");
         }
@@ -42,7 +42,10 @@ export class ECPublicKey {
         res.key = publicKey;
 
         // Serialize public key to JWK
-        const jwk = await crypto.subtle.exportKey("jwk", publicKey);
+        const jwk = await getEngine().crypto.subtle.exportKey("jwk", publicKey);
+        if (!(jwk.x && jwk.y)) {
+            throw new Error("Wrong JWK data for EC public key. Parameters x and y are required.");
+        }
         const x = Convert.FromBase64Url(jwk.x);
         const y = Convert.FromBase64Url(jwk.y);
         const xy = Convert.ToBinary(x) + Convert.ToBinary(y);
@@ -66,13 +69,13 @@ export class ECPublicKey {
         const x = Convert.ToBase64Url(bytes.slice(0, 32));
         const y = Convert.ToBase64Url(bytes.slice(32));
         const jwk = {
-            kty: "EC",
             crv: Curve.NAMED_CURVE,
+            kty: "EC",
             x,
             y,
         };
         const usage = (type === "ECDSA" ? ["verify"] : []);
-        const key = await crypto.subtle
+        const key = await getEngine().crypto.subtle
             .importKey("jwk", jwk, { name: type, namedCurve: Curve.NAMED_CURVE }, true, usage);
         const res = await ECPublicKey.create(key);
         return res;

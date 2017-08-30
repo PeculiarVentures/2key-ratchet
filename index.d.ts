@@ -12,11 +12,11 @@ declare namespace DKeyRatchet {
     export type RatchetKeyPair = CryptoKeyPair;
     export type HMACCryptoKey = CryptoKey;
     export type ECKeyType = "ECDH" | "ECDSA";
-    export interface DHRatchetItem {
+    export interface IDHRatchetItem {
         key: RatchetKeyPair;
     }
 
-    export interface SymmetricKDFResult {
+    export interface ISymmetricKDFResult {
         cipher: ArrayBuffer;
         rootKey: CryptoKey;
     }
@@ -44,7 +44,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf ECPublicKey
          */
-        static create(publicKey: CryptoKey): Promise<ECPublicKey>;
+        public static create(publicKey: CryptoKey): Promise<ECPublicKey>;
         /**
          * Creates ECPublicKey from raw data
          *
@@ -55,7 +55,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf ECPublicKey
          */
-        static importKey(bytes: ArrayBuffer, type: ECKeyType): Promise<ECPublicKey>;
+        public static importKey(bytes: ArrayBuffer, type: ECKeyType): Promise<ECPublicKey>;
         /**
          * Identity of ECPublicKey
          * HEX string of thumbprint of EC key
@@ -63,14 +63,14 @@ declare namespace DKeyRatchet {
          * @type {string}
          * @memberOf ECPublicKey
          */
-        id: string;
+        public id: string;
         /**
          * Crypto key
          *
          * @type {CryptoKey}
          * @memberOf ECPublicKey
          */
-        key: CryptoKey;
+        public key: CryptoKey;
         /**
          * raw data of key
          *
@@ -86,7 +86,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf ECPublicKey
          */
-        serialize(): ArrayBuffer;
+        public serialize(): ArrayBuffer;
         /**
          * Returns SHA-256 digest of key
          *
@@ -94,7 +94,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf ECPublicKey
          */
-        thumbprint(): Promise<string>;
+        public thumbprint(): Promise<string>;
         /**
          * Returns `true` if current is equal to given parameter
          *
@@ -103,17 +103,17 @@ declare namespace DKeyRatchet {
          *
          * @memberOf ECPublicKey
          */
-        isEqual(other: any): Promise<boolean>;
+        public isEqual(other: any): Promise<boolean>;
     }
 
-    export interface ECKeyPair {
+    export interface IECKeyPair {
         privateKey: CryptoKey;
         publicKey: ECPublicKey;
     }
 
     export class Curve {
-        static NAMED_CURVE: string;
-        static DIGEST_ALGORITHM: string;
+        public static NAMED_CURVE: string;
+        public static DIGEST_ALGORITHM: string;
         /**
          * Generates new EC key pair
          *
@@ -123,7 +123,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf Curve
          */
-        static generateKeyPair(type: ECKeyType): Promise<ECKeyPair>;
+        public static generateKeyPair(type: ECKeyType): Promise<IECKeyPair>;
         /**
          * Derives 32 bytes from EC keys
          *
@@ -134,7 +134,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf Curve
          */
-        static deriveBytes(privateKey: ECDHPrivateKey, publicKey: ECPublicKey): PromiseLike<ArrayBuffer>;
+        public static deriveBytes(privateKey: ECDHPrivateKey, publicKey: ECPublicKey): PromiseLike<ArrayBuffer>;
         /**
          * Verifies signature
          *
@@ -146,7 +146,11 @@ declare namespace DKeyRatchet {
          *
          * @memberOf Curve
          */
-        static verify(signingKey: ECPublicKey, message: ArrayBuffer, signature: ArrayBuffer): PromiseLike<boolean>;
+        public static verify(
+            signingKey: ECPublicKey,
+            message: ArrayBuffer,
+            signature: ArrayBuffer,
+        ): PromiseLike<boolean>;
         /**
          * Calculates signature
          *
@@ -157,11 +161,10 @@ declare namespace DKeyRatchet {
          *
          * @memberOf Curve
          */
-        static sign(signingKey: ECDHPrivateKey, message: ArrayBuffer): Promise<ArrayBuffer>;
+        public static sign(signingKey: ECDHPrivateKey, message: ArrayBuffer): Promise<ArrayBuffer>;
     }
 
     export class Secret {
-        static subtle: SubtleCrypto;
         /**
          * Returns ArrayBuffer of random bytes
          *
@@ -171,7 +174,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf Secret
          */
-        static randomBytes(size: number): ArrayBuffer;
+        public static randomBytes(size: number): ArrayBuffer;
         /**
          * Calculates digest
          *
@@ -182,7 +185,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf Secret
          */
-        static digest(alg: string, message: ArrayBuffer): PromiseLike<ArrayBuffer>;
+        public static digest(alg: string, message: ArrayBuffer): PromiseLike<ArrayBuffer>;
         /**
          * Encrypts data
          *
@@ -194,7 +197,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf Secret
          */
-        static encrypt(key: CryptoKey, data: ArrayBuffer, iv: ArrayBuffer): PromiseLike<ArrayBuffer>;
+        public static encrypt(key: CryptoKey, data: ArrayBuffer, iv: ArrayBuffer): PromiseLike<ArrayBuffer>;
         /**
          * Decrypts data
          *
@@ -206,7 +209,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf Secret
          */
-        static decrypt(key: CryptoKey, data: ArrayBuffer, iv: ArrayBuffer): PromiseLike<ArrayBuffer>;
+        public static decrypt(key: CryptoKey, data: ArrayBuffer, iv: ArrayBuffer): PromiseLike<ArrayBuffer>;
         /**
          * Creates HMAC key from raw data
          *
@@ -216,7 +219,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf Secret
          */
-        static importHMAC(raw: ArrayBuffer): PromiseLike<CryptoKey>;
+        public static importHMAC(raw: ArrayBuffer): PromiseLike<CryptoKey>;
         /**
          * Creates AES key from raw data
          *
@@ -226,7 +229,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf Secret
          */
-        static importAES(raw: ArrayBuffer): PromiseLike<CryptoKey>;
+        public static importAES(raw: ArrayBuffer): PromiseLike<CryptoKey>;
         /**
          * Calculates signature
          *
@@ -237,7 +240,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf Secret
          */
-        static sign(key: CryptoKey, data: ArrayBuffer): Promise<ArrayBuffer>;
+        public static sign(key: CryptoKey, data: ArrayBuffer): Promise<ArrayBuffer>;
         /**
          * HKDF rfc5869
          *
@@ -251,17 +254,22 @@ declare namespace DKeyRatchet {
          *
          * @memberOf AsymmetricRatchet
          */
-        static HKDF(IKM: ArrayBuffer, keysCount?: number, salt?: HMACCryptoKey, info?: ArrayBuffer): Promise<ArrayBuffer[]>;
+        public static HKDF(
+            IKM: ArrayBuffer,
+            keysCount?: number,
+            salt?: HMACCryptoKey,
+            info?: ArrayBuffer,
+        ): Promise<ArrayBuffer[]>;
     }
 
     // data
 
     export class Address {
         protected static readonly SPLITTER: string;
-        name: string;
-        id: number;
+        public name: string;
+        public id: number;
         constructor(name: string, id: number);
-        toString(): string;
+        public toString(): string;
     }
 
     export interface IJsonIdentity {
@@ -275,14 +283,14 @@ declare namespace DKeyRatchet {
 
     export class Identity implements IJsonSerializable {
         public static fromJSON(obj: IJsonIdentity): Promise<Identity>;
-        static create(id: number, signedPreKeyAmount?: number, preKeyAmount?: number): Promise<Identity>;
-        id: number;
-        signingKey: ECKeyPair;
-        exchangeKey: ECKeyPair;
-        preKeys: ECKeyPair[];
-        signedPreKeys: ECKeyPair[];
-        createdAt: Date;
-        protected constructor(id: number, signingKey: ECKeyPair, exchangeKey: ECKeyPair);
+        public static create(id: number, signedPreKeyAmount?: number, preKeyAmount?: number): Promise<Identity>;
+        public id: number;
+        public signingKey: IECKeyPair;
+        public exchangeKey: IECKeyPair;
+        public preKeys: IECKeyPair[];
+        public signedPreKeys: IECKeyPair[];
+        public createdAt: Date;
+        protected constructor(id: number, signingKey: IECKeyPair, exchangeKey: IECKeyPair);
         public toJSON(): Promise<IJsonIdentity>;
         public fromJSON(obj: IJsonIdentity): Promise<void>;
     }
@@ -291,7 +299,7 @@ declare namespace DKeyRatchet {
         id: number;
         /**
          * Thumbprint of signing key
-         * 
+         *
          * @type {string}
          * @memberOf IJsonRemoteIdentity
          */
@@ -303,101 +311,101 @@ declare namespace DKeyRatchet {
     }
 
     export class RemoteIdentity implements IJsonSerializable {
-        static fill(protocol: IdentityProtocol): RemoteIdentity;
-        static fromJSON(obj: IJsonRemoteIdentity): Promise<RemoteIdentity>;
-        id: number;
-        signingKey: ECPublicKey;
-        exchangeKey: ECPublicKey;
-        signature: ArrayBuffer;
-        createdAt: Date;
-        fill(protocol: IdentityProtocol): void;
-        verify(): PromiseLike<boolean>;
-        toJSON(): Promise<IJsonRemoteIdentity>;
-        fromJSON(obj: IJsonRemoteIdentity): Promise<void>;
+        public static fill(protocol: IdentityProtocol): RemoteIdentity;
+        public static fromJSON(obj: IJsonRemoteIdentity): Promise<RemoteIdentity>;
+        public id: number;
+        public signingKey: ECPublicKey;
+        public exchangeKey: ECPublicKey;
+        public signature: ArrayBuffer;
+        public createdAt: Date;
+        public fill(protocol: IdentityProtocol): void;
+        public verify(): PromiseLike<boolean>;
+        public toJSON(): Promise<IJsonRemoteIdentity>;
+        public fromJSON(obj: IJsonRemoteIdentity): Promise<void>;
     }
 
     // protocol
 
     export abstract class BaseProtocol extends ObjectProto {
-        version: number;
+        public version: number;
     }
 
     export class IdentityProtocol extends BaseProtocol {
-        static fill(identity: Identity): Promise<IdentityProtocol>;
-        signingKey: ECPublicKey;
-        exchangeKey: ECPublicKey;
-        signature: ArrayBuffer;
-        createdAt: Date;
-        sign(key: CryptoKey): Promise<void>;
-        verify(): Promise<boolean>;
-        fill(identity: Identity): Promise<void>;
+        public static fill(identity: Identity): Promise<IdentityProtocol>;
+        public signingKey: ECPublicKey;
+        public exchangeKey: ECPublicKey;
+        public signature: ArrayBuffer;
+        public createdAt: Date;
+        public sign(key: CryptoKey): Promise<void>;
+        public verify(): Promise<boolean>;
+        public fill(identity: Identity): Promise<void>;
     }
 
     export class MessageProtocol extends BaseProtocol {
-        senderRatchetKey: ECPublicKey;
-        counter: number;
-        previousCounter: number;
-        cipherText: ArrayBuffer;
+        public senderRatchetKey: ECPublicKey;
+        public counter: number;
+        public previousCounter: number;
+        public cipherText: ArrayBuffer;
     }
 
     export class MessageSignedProtocol extends BaseProtocol {
-        receiverKey: ECPublicKey;
-        senderKey: ECPublicKey;
-        message: MessageProtocol;
+        public receiverKey: ECPublicKey;
+        public senderKey: ECPublicKey;
+        public message: MessageProtocol;
         protected signature: ArrayBuffer;
-        sign(hmacKey: CryptoKey): Promise<void>;
-        verify(hmacKey: CryptoKey): Promise<boolean>;
+        public sign(hmacKey: CryptoKey): Promise<void>;
+        public verify(hmacKey: CryptoKey): Promise<boolean>;
         protected getSignedRaw(): Promise<ArrayBuffer>;
         protected signHMAC(macKey: CryptoKey): Promise<ArrayBuffer>;
     }
 
     export class PreKeyMessageProtocol extends BaseProtocol {
-        registrationId: number;
-        preKeyId: number;
-        preKeySignedId: number;
-        baseKey: ECPublicKey;
-        identity: IdentityProtocol;
-        signedMessage: MessageSignedProtocol;
+        public registrationId: number;
+        public preKeyId: number;
+        public preKeySignedId: number;
+        public baseKey: ECPublicKey;
+        public identity: IdentityProtocol;
+        public signedMessage: MessageSignedProtocol;
     }
 
     export class PreKeyProtocol extends BaseProtocol {
-        id: number;
-        key: ECPublicKey;
+        public id: number;
+        public key: ECPublicKey;
     }
 
     export class PreKeySignedProtocol extends PreKeyProtocol {
-        signature: ArrayBuffer;
-        sign(key: CryptoKey): Promise<void>;
-        verify(key: ECPublicKey): PromiseLike<boolean>;
+        public signature: ArrayBuffer;
+        public sign(key: CryptoKey): Promise<void>;
+        public verify(key: ECPublicKey): PromiseLike<boolean>;
     }
 
     export class PreKeyBundleProtocol extends BaseProtocol {
-        registrationId: number;
-        identity: IdentityProtocol;
-        preKey: PreKeyProtocol;
-        preKeySigned: PreKeySignedProtocol;
+        public registrationId: number;
+        public identity: IdentityProtocol;
+        public preKey: PreKeyProtocol;
+        public preKeySigned: PreKeySignedProtocol;
     }
 
     // core
 
     export class Stack<T> {
         public items: T[];
+        public readonly length: number;
+        public readonly latest: T;
         protected maxSize: number;
-        readonly length: number;
-        readonly latest: T;
-        constructor(maxSize?: number);
-        push(item: T): void;
+        public constructor(maxSize?: number);
+        public push(item: T): void;
     }
 
     export class AssocStorage<T> {
+        public readonly length: number;
         protected items: {
             [key: string]: T;
         };
-        readonly length: number;
-        save(key: string, value: T): void;
-        load(key: string): T;
-        remove(key: string): void;
-        clear(): void;
+        public save(key: string, value: T): void;
+        public load(key: string): T;
+        public remove(key: string): void;
+        public clear(): void;
     }
 
     export interface IJsonAsymmetricRatchet {
@@ -441,17 +449,24 @@ declare namespace DKeyRatchet {
          *
          * @memberOf AsymmetricRatchet
          */
-        static create(identity: Identity, protocol: PreKeyBundleProtocol | PreKeyMessageProtocol): Promise<AsymmetricRatchet>;
-        static fromJSON(identity: Identity, remote: RemoteIdentity, obj: IJsonAsymmetricRatchet): Promise<AsymmetricRatchet>;
-        id: number;
-        rootKey: HMACCryptoKey;
-        identity: Identity;
-        remoteIdentity: RemoteIdentity;
-        remotePreKeyId?: number;
-        remotePreKeySignedId: number;
-        counter: number;
-        currentStep: DHRatchetStep;
-        currentRatchetKey: ECKeyPair;
+        public static create(
+            identity: Identity,
+            protocol: PreKeyBundleProtocol | PreKeyMessageProtocol,
+        ): Promise<AsymmetricRatchet>;
+        public static fromJSON(
+            identity: Identity,
+            remote: RemoteIdentity,
+            obj: IJsonAsymmetricRatchet,
+        ): Promise<AsymmetricRatchet>;
+        public id: number;
+        public rootKey: HMACCryptoKey;
+        public identity: Identity;
+        public remoteIdentity: RemoteIdentity;
+        public remotePreKeyId?: number;
+        public remotePreKeySignedId: number;
+        public counter: number;
+        public currentStep: DHRatchetStep;
+        public currentRatchetKey: IECKeyPair;
         protected steps: DHRatchetStepStack;
         protected constructor();
 
@@ -466,7 +481,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf AsymmetricRatchet
          */
-        decrypt(protocol: MessageSignedProtocol): Promise<ArrayBuffer>;
+        public decrypt(protocol: MessageSignedProtocol): Promise<ArrayBuffer>;
         /**
          * Encrypts message
          *
@@ -475,7 +490,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf AsymmetricRatchet
          */
-        encrypt(message: ArrayBuffer): Promise<MessageSignedProtocol | PreKeyMessageProtocol>;
+        public encrypt(message: ArrayBuffer): Promise<MessageSignedProtocol | PreKeyMessageProtocol>;
 
         public toJSON(): Promise<IJsonAsymmetricRatchet>;
         public fromJSON(obj: IJsonAsymmetricRatchet): Promise<void>;
@@ -489,7 +504,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf AsymmetricRatchet
          */
-        protected generateRatchetKey(): Promise<ECKeyPair>;
+        protected generateRatchetKey(): Promise<IECKeyPair>;
         /**
          * Creates new symmetric ratchet
          *
@@ -501,6 +516,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf AsymmetricRatchet
          */
+        // tslint:disable-next-line:max-line-length
         protected createChain(ourRatchetKey: ECDHPrivateKey, theirRatchetKey: ECPublicKey, ratchetClass: typeof ReceivingRatchet): Promise<ReceivingRatchet>;
         protected createChain(ourRatchetKey: ECDHPrivateKey, theirRatchetKey: ECPublicKey, ratchetClass: typeof SendingRatchet): Promise<SendingRatchet>;
     }
@@ -517,21 +533,21 @@ declare namespace DKeyRatchet {
          * @type {ECPublicKey}
          * @memberOf DHRatchetStep
          */
-        remoteRatchetKey?: ECPublicKey;
+        public remoteRatchetKey?: ECPublicKey;
         /**
          * Sending chain
          *
          * @type {SendingRatchet}
          * @memberOf DHRatchetStep
          */
-        sendingChain?: SendingRatchet;
+        public sendingChain?: SendingRatchet;
         /**
          * Receiving chain
          *
          * @type {ReceivingRatchet}
          * @memberOf DHRatchetStep
          */
-        receivingChain?: ReceivingRatchet;
+        public receivingChain?: ReceivingRatchet;
     }
     /**
      * Implements collection of DHRatchetStep
@@ -548,16 +564,16 @@ declare namespace DKeyRatchet {
          *
          * @memberOf DHRatchetStepStack
          */
-        getStep(remoteRatchetKey: ECPublicKey): DHRatchetStep;
+        public getStep(remoteRatchetKey: ECPublicKey): DHRatchetStep;
     }
 
     /**
      * Encrypt/Decrypt result for Symmetric ratchets
      *
      * @export
-     * @interface CipherMessage
+     * @interface ICipherMessage
      */
-    export interface CipherMessage {
+    export interface ICipherMessage {
         /**
          * Encrypted or decrypted message
          */
@@ -568,11 +584,11 @@ declare namespace DKeyRatchet {
         hmacKey: CryptoKey;
     }
     export abstract class SymmetricRatchet {
-        counter: number;
+        public counter: number;
         /**
          * Current symmetric ratchet key
          */
-        rootKey: HMACCryptoKey;
+        public rootKey: HMACCryptoKey;
         constructor(rootKey: CryptoKey);
         /**
          * calculates new keys by rootKey KDF_CK(ck)
@@ -584,7 +600,7 @@ declare namespace DKeyRatchet {
          *
          * @memberOf SymmetricRatchet
          */
-        protected calculateKey(rootKey: CryptoKey): Promise<SymmetricKDFResult>;
+        protected calculateKey(rootKey: CryptoKey): Promise<ISymmetricKDFResult>;
         /**
          * Move to next step of ratchet
          *
@@ -607,17 +623,39 @@ declare namespace DKeyRatchet {
          * Encrypts message
          *
          * @param {ArrayBuffer} message
-         * @returns CipherMessage type
+         * @returns ICipherMessage type
          *
          * @memberOf SendingRatchet
          */
-        encrypt(message: ArrayBuffer): Promise<CipherMessage>;
+        public encrypt(message: ArrayBuffer): Promise<ICipherMessage>;
     }
     export class ReceivingRatchet extends SymmetricRatchet {
         protected keys: ArrayBuffer[];
-        decrypt(message: ArrayBuffer, counter: number): Promise<CipherMessage>;
+        public decrypt(message: ArrayBuffer, counter: number): Promise<ICipherMessage>;
         protected getKey(counter: number): Promise<ArrayBuffer>;
     }
+
+    // Crypto engine
+
+    /**
+     * Crypto engine structure
+     *
+     * @export
+     * @interface ICryptoEngine
+     */
+    export interface ICryptoEngine {
+        name: string;
+        crypto: Crypto;
+    }
+
+    /**
+     * Returns crypto engine
+     * It throws exception if engine is empty.
+     *
+     * @export
+     * @returns {ICryptoEngine}
+     */
+    export function getEngine(): ICryptoEngine;
 
 }
 

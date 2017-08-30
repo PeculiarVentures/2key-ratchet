@@ -67,7 +67,7 @@ Promise.resolve()
                     })
             })
             .then(() => {
-                // Dectypt message by Alice
+                // Decrypt message by Alice
 
                 // Note: First message from Bob must be PreKeyMessage
                 // parse Bob's message

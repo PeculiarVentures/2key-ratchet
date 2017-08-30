@@ -1,4 +1,4 @@
-import { ECKeyPair } from "./crypto/key_pair";
+import { IECKeyPair } from "./crypto/key_pair";
 
 export type ECDHPublicKey = CryptoKey;
 export type ECDSAPublicKey = CryptoKey;
@@ -9,7 +9,7 @@ export type HMACCryptoKey = CryptoKey;
 
 export type ECKeyType = "ECDH" | "ECDSA";
 
-export interface DHRatchetItem {
+export interface IDHRatchetItem {
     key: RatchetKeyPair;
 }
 
@@ -28,31 +28,31 @@ export interface ISession {
     identityId: string;
 }
 
-export interface SymmetricKDFResult2 {
+export interface ISymmetricKDFResult2 {
     rootKey: CryptoKey;
     bytes: Uint8Array;
 }
 
-export interface SymmetricKDFResult {
+export interface ISymmetricKDFResult {
     cipher: ArrayBuffer;
     rootKey: CryptoKey;
 }
 
-export interface MessageProtocol {
+export interface IMessageProtocol {
     ratchetKey: ECDHPublicKey;
     message: ArrayBuffer;
     counter: number;
 }
 
 export interface IIdentityKeyPair {
-    signingKey: ECKeyPair;
-    exchangeKey: ECKeyPair;
+    signingKey: IECKeyPair;
+    exchangeKey: IECKeyPair;
     signature: ArrayBuffer;
 }
 
 export interface IPreKeyPair {
     id: number;
-    key: ECKeyPair;
+    key: IECKeyPair;
 }
 
 export interface IPreKeySignedPair extends IPreKeyPair {

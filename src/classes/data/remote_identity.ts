@@ -60,12 +60,12 @@ export class RemoteIdentity implements IJsonSerializable {
 
     public async toJSON() {
         return {
-            id: this.id,
-            thumbprint: await this.signingKey.thumbprint(),
-            signingKey: await this.signingKey.key,
-            exchangeKey: await this.exchangeKey.key,
-            signature: this.signature,
             createdAt: this.createdAt.toISOString(),
+            exchangeKey: await this.exchangeKey.key,
+            id: this.id,
+            signature: this.signature,
+            signingKey: await this.signingKey.key,
+            thumbprint: await this.signingKey.thumbprint(),
         } as IJsonRemoteIdentity;
     }
 

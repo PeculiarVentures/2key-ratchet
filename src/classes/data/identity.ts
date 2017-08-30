@@ -8,7 +8,7 @@
  */
 
 import { DH_ALGORITHM_NAME, SIGN_ALGORITHM_NAME } from "../const";
-import { Curve, ECKeyPair, ECPublicKey } from "../crypto";
+import { Curve, IECKeyPair, ECPublicKey } from "../crypto";
 import { AssocStorage } from "../storage";
 import { IJsonSerializable } from "../type";
 
@@ -49,14 +49,14 @@ export class Identity implements IJsonSerializable {
     }
 
     public id: number;
-    public signingKey: ECKeyPair;
-    public exchangeKey: ECKeyPair;
+    public signingKey: IECKeyPair;
+    public exchangeKey: IECKeyPair;
     public createdAt: Date;
 
-    public preKeys: ECKeyPair[];
-    public signedPreKeys: ECKeyPair[];
+    public preKeys: IECKeyPair[];
+    public signedPreKeys: IECKeyPair[];
 
-    protected constructor(id: number, signingKey: ECKeyPair, exchangeKey: ECKeyPair) {
+    protected constructor(id: number, signingKey: IECKeyPair, exchangeKey: IECKeyPair) {
         this.id = id;
         this.signingKey = signingKey;
         this.exchangeKey = exchangeKey;
@@ -74,12 +74,12 @@ export class Identity implements IJsonSerializable {
             signedPreKeys.push(await Curve.ecKeyPairToJson(key));
         }
         return {
-            id: this.id,
-            signingKey: await Curve.ecKeyPairToJson(this.signingKey),
+            createdAt: this.createdAt.toISOString(),
             exchangeKey: await Curve.ecKeyPairToJson(this.exchangeKey),
+            id: this.id,
             preKeys,
             signedPreKeys,
-            createdAt: this.createdAt.toISOString(),
+            signingKey: await Curve.ecKeyPairToJson(this.signingKey),
         } as IJsonIdentity;
     }
 

@@ -9,8 +9,8 @@
 
 import { Convert } from "pvtsutils";
 import { INFO_MESSAGE_KEYS } from "./const";
-import { ECKeyPair, ECPublicKey, Secret } from "./crypto";
-import { HMACCryptoKey, RatchetKey, SymmetricKDFResult } from "./type";
+import { IECKeyPair, ECPublicKey, Secret } from "./crypto";
+import { HMACCryptoKey, ISymmetricKDFResult, RatchetKey } from "./type";
 import { IJsonSerializable } from "./type";
 
 // Constants for KDF_CK function
@@ -23,7 +23,7 @@ const ROOT_KEY_KDF_INPUT = new Uint8Array([2]).buffer;
  * @export
  * @interface CipherMessage
  */
-export interface CipherMessage {
+export interface ICipherMessage {
     /**
      * Encrypted or decrypted message
      */
@@ -41,7 +41,10 @@ export interface IJsonSymmetricRatchet {
 
 export abstract class SymmetricRatchet implements IJsonSerializable {
 
-    public static async fromJSON<T extends SymmetricRatchet>(this: { new (rootKey: CryptoKey): T }, obj: IJsonSymmetricRatchet) {
+    public static async fromJSON<T extends SymmetricRatchet>(
+        this: { new (rootKey: CryptoKey): T },
+        obj: IJsonSymmetricRatchet,
+    ) {
         const res = new this(obj.rootKey);
         res.fromJSON(obj);
         return res;
@@ -84,9 +87,9 @@ export abstract class SymmetricRatchet implements IJsonSerializable {
         const cipherKeyBytes = await Secret.sign(rootKey, CIPHER_KEY_KDF_INPUT);
         const nextRootKeyBytes = await Secret.sign(rootKey, ROOT_KEY_KDF_INPUT);
 
-        const res: SymmetricKDFResult = {
-            rootKey: await Secret.importHMAC(nextRootKeyBytes),
+        const res: ISymmetricKDFResult = {
             cipher: cipherKeyBytes,
+            rootKey: await Secret.importHMAC(nextRootKeyBytes),
         };
         return res;
     }
@@ -137,9 +140,9 @@ export class SendingRatchet extends SymmetricRatchet {
         const cipherText = await Secret.encrypt(aesKey, message, iv);
 
         return {
-            hmacKey,
             cipherText,
-        } as CipherMessage;
+            hmacKey,
+        } as ICipherMessage;
     }
 
 }
@@ -174,9 +177,9 @@ export class ReceivingRatchet extends SymmetricRatchet {
         const cipherText = await Secret.decrypt(aesKey, message, iv);
 
         return {
-            hmacKey,
             cipherText,
-        } as CipherMessage;
+            hmacKey,
+        } as ICipherMessage;
     }
 
     protected async getKey(counter: number) {

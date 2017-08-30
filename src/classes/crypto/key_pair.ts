@@ -9,7 +9,7 @@
 
 import { ECPublicKey } from "./public_key";
 
-export interface ECKeyPair {
+export interface IECKeyPair {
     privateKey: CryptoKey;
     publicKey: ECPublicKey;
 }

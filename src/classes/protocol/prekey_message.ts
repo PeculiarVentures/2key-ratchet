@@ -21,7 +21,7 @@ export class PreKeyMessageProtocol extends BaseProtocol {
     public registrationId: number;
 
     @ProtobufProperty({ id: 2, type: "uint32" })
-    public preKeyId: number;
+    public preKeyId?: number;
 
     @ProtobufProperty({ id: 3, type: "uint32", required: true })
     public preKeySignedId: number;

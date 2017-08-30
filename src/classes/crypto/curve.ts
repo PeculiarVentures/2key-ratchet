@@ -8,8 +8,8 @@
  */
 
 import { ECDHPrivateKey, ECKeyType } from "../type";
-import crypto from "./crypto";
-import { ECKeyPair } from "./key_pair";
+import { getEngine } from "./crypto";
+import { IECKeyPair } from "./key_pair";
 import { ECPublicKey } from "./public_key";
 
 export class Curve {
@@ -29,11 +29,11 @@ export class Curve {
     public static async generateKeyPair(type: ECKeyType) {
         const name = type;
         const usage = type === "ECDSA" ? ["sign", "verify"] : ["deriveKey", "deriveBits"];
-        const keys = await crypto.subtle.generateKey({ name, namedCurve: this.NAMED_CURVE }, false, usage);
+        const keys = await getEngine().crypto.subtle.generateKey({ name, namedCurve: this.NAMED_CURVE }, false, usage);
         const publicKey = await ECPublicKey.create(keys.publicKey);
-        const res: ECKeyPair = {
-            publicKey,
+        const res: IECKeyPair = {
             privateKey: keys.privateKey,
+            publicKey,
         };
         return res;
     }
@@ -49,7 +49,7 @@ export class Curve {
      * @memberOf Curve
      */
     public static deriveBytes(privateKey: ECDHPrivateKey, publicKey: ECPublicKey) {
-        return crypto.subtle.deriveBits({ name: "ECDH", public: publicKey.key }, privateKey, 256);
+        return getEngine().crypto.subtle.deriveBits({ name: "ECDH", public: publicKey.key }, privateKey, 256);
     }
 
     /**
@@ -64,7 +64,8 @@ export class Curve {
      * @memberOf Curve
      */
     public static verify(signingKey: ECPublicKey, message: ArrayBuffer, signature: ArrayBuffer) {
-        return crypto.subtle.verify({ name: "ECDSA", hash: this.DIGEST_ALGORITHM }, signingKey.key, signature, message);
+        return getEngine().crypto.subtle
+            .verify({ name: "ECDSA", hash: this.DIGEST_ALGORITHM }, signingKey.key, signature, message);
     }
 
     /**
@@ -78,10 +79,10 @@ export class Curve {
      * @memberOf Curve
      */
     public static async sign(signingKey: ECDHPrivateKey, message: ArrayBuffer) {
-        return crypto.subtle.sign({ name: "ECDSA", hash: this.DIGEST_ALGORITHM }, signingKey, message);
+        return getEngine().crypto.subtle.sign({ name: "ECDSA", hash: this.DIGEST_ALGORITHM }, signingKey, message);
     }
 
-    public static async ecKeyPairToJson(key: ECKeyPair) {
+    public static async ecKeyPairToJson(key: IECKeyPair) {
         return {
             privateKey: key.privateKey,
             publicKey: key.publicKey.key,
@@ -93,7 +94,7 @@ export class Curve {
         return {
             privateKey: keys.privateKey,
             publicKey: await ECPublicKey.create(keys.publicKey),
-        } as ECKeyPair;
+        } as IECKeyPair;
     }
 
 }

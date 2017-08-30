@@ -10,13 +10,11 @@
 import { combine, Convert } from "pvtsutils";
 import { HASH_NAME, HMAC_NAME, SECRET_KEY_NAME } from "../const";
 import { HMACCryptoKey } from "../type";
-import crypto from "./crypto";
+import { getEngine } from "./crypto";
 
 const AES_ALGORITHM = { name: "AES-CBC", length: 256 };
 
 export class Secret {
-
-    public static subtle = crypto.subtle;
 
     /**
      * Returns ArrayBuffer of random bytes
@@ -29,7 +27,7 @@ export class Secret {
      */
     public static randomBytes(size: number) {
         const array = new Uint8Array(size);
-        crypto.getRandomValues(array);
+        getEngine().crypto.getRandomValues(array);
         return array.buffer;
     }
 
@@ -44,7 +42,7 @@ export class Secret {
      * @memberOf Secret
      */
     public static digest(alg: string, message: ArrayBuffer) {
-        return crypto.subtle.digest(alg, message);
+        return getEngine().crypto.subtle.digest(alg, message);
     }
 
     /**
@@ -59,7 +57,7 @@ export class Secret {
      * @memberOf Secret
      */
     public static encrypt(key: CryptoKey, data: ArrayBuffer, iv: ArrayBuffer) {
-        return crypto.subtle.encrypt({ name: SECRET_KEY_NAME, iv: new Uint8Array(iv) }, key, data);
+        return getEngine().crypto.subtle.encrypt({ name: SECRET_KEY_NAME, iv: new Uint8Array(iv) }, key, data);
     }
 
     /**
@@ -74,7 +72,7 @@ export class Secret {
      * @memberOf Secret
      */
     public static decrypt(key: CryptoKey, data: ArrayBuffer, iv: ArrayBuffer) {
-        return crypto.subtle.decrypt({ name: SECRET_KEY_NAME, iv: new Uint8Array(iv) }, key, data);
+        return getEngine().crypto.subtle.decrypt({ name: SECRET_KEY_NAME, iv: new Uint8Array(iv) }, key, data);
     }
 
     /**
@@ -88,7 +86,7 @@ export class Secret {
      */
     public static importHMAC(raw: ArrayBuffer) {
         // console.log("HMAC:", Convert.ToHex(raw));
-        return crypto.subtle
+        return getEngine().crypto.subtle
             .importKey("raw", raw, { name: HMAC_NAME, hash: { name: HASH_NAME } }, false, ["sign", "verify"]);
     }
 
@@ -103,7 +101,7 @@ export class Secret {
      */
     public static importAES(raw: ArrayBuffer) {
         // console.log("AES:", Convert.ToHex(raw));
-        return crypto.subtle.importKey("raw", raw, AES_ALGORITHM, false, ["encrypt", "decrypt"]);
+        return getEngine().crypto.subtle.importKey("raw", raw, AES_ALGORITHM, false, ["encrypt", "decrypt"]);
     }
 
     /**
@@ -117,7 +115,7 @@ export class Secret {
      * @memberOf Secret
      */
     public static async sign(key: CryptoKey, data: ArrayBuffer) {
-        return await crypto.subtle.sign({ name: HMAC_NAME, hash: HASH_NAME }, key, data);
+        return await getEngine().crypto.subtle.sign({ name: HMAC_NAME, hash: HASH_NAME }, key, data);
     }
 
     /**

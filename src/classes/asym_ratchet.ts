@@ -10,7 +10,7 @@
 import { EventEmitter } from "events";
 import { combine, Convert } from "pvtsutils";
 import { INFO_RATCHET, INFO_TEXT, MAX_RATCHET_STACK_SIZE, SECRET_KEY_NAME } from "./const";
-import { Curve, ECKeyPair, ECPublicKey, Secret } from "./crypto";
+import { Curve, IECKeyPair, ECPublicKey, Secret } from "./crypto";
 import { Identity } from "./data";
 import { RemoteIdentity } from "./data/remote_identity";
 import { MessageSignedProtocol, PreKeyBundleProtocol, PreKeyMessageProtocol } from "./protocol";
@@ -29,13 +29,19 @@ import { ECDHPrivateKey, ECDHPublicKey, HMACCryptoKey } from "./type";
  * @param {boolean} flag Sets order for auth mechanism.
  * - If `true` then DH1 || DH2, otherwise DH2 || DH1
  * @param {Identity} IKA
- * @param {ECKeyPair} EKA
+ * @param {IECKeyPair} EKA
  * @param {RemoteIdentity} IKB Bob's identity key IKB
  * @param {ECPublicKey} SPKB Bob's signed prekey SPKB
  * @param {ECPublicKey} [OPKB] Bob's one-time prekey OPKB. Optionally
  *
  */
-async function authenticateA(IKa: Identity, EKa: ECKeyPair, IKb: ECPublicKey, SPKb: ECPublicKey, OPKb?: ECPublicKey) {
+async function authenticateA(
+    IKa: Identity,
+    EKa: IECKeyPair,
+    IKb: ECPublicKey,
+    SPKb: ECPublicKey,
+    OPKb?: ECPublicKey,
+) {
     /**
      * If the bundle does not contain a one-time PreKey
      *
@@ -68,7 +74,13 @@ async function authenticateA(IKa: Identity, EKa: ECKeyPair, IKb: ECPublicKey, SP
     return await Secret.importHMAC(keys[0]);
 }
 
-async function authenticateB(IKb: Identity, SPKb: ECKeyPair, IKa: ECPublicKey, EKa: ECPublicKey, OPKb?: ECDHPrivateKey) {
+async function authenticateB(
+    IKb: Identity,
+    SPKb: IECKeyPair,
+    IKa: ECPublicKey,
+    EKa: ECPublicKey,
+    OPKb?: ECDHPrivateKey,
+) {
     /**
      * If the bundle does not contain a one-time PreKey
      *
@@ -171,14 +183,20 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
             }
 
             // get one-time prekey
-            let preKey: ECKeyPair | undefined;
-            preKey = identity.preKeys[protocol.preKeyId];
+            let preKey: IECKeyPair | undefined;
+            if (protocol.preKeyId !== void 0) {
+                preKey = identity.preKeys[protocol.preKeyId];
+            }
 
             ratchet.remoteIdentity = RemoteIdentity.fill(protocol.identity);
             ratchet.currentRatchetKey = signedPreKey;
             rootKey = await authenticateB(
-                identity, ratchet.currentRatchetKey,
-                protocol.identity.exchangeKey, protocol.signedMessage.message.senderRatchetKey, preKey && preKey.privateKey);
+                identity,
+                ratchet.currentRatchetKey,
+                protocol.identity.exchangeKey,
+                protocol.signedMessage.message.senderRatchetKey,
+                preKey && preKey.privateKey,
+            );
 
         }
         // console.info(`${this.name}:Create Diffie-Hellman ratchet for ${identity.id}`);
@@ -204,7 +222,7 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
     public remotePreKeySignedId: number;
     public counter = 0;
     public currentStep = new DHRatchetStep();
-    public currentRatchetKey: ECKeyPair;
+    public currentRatchetKey: IECKeyPair;
     protected steps = new DHRatchetStepStack(MAX_RATCHET_STACK_SIZE);
     protected promises: { [key: string]: Promise<any> } = {};
 
@@ -214,12 +232,14 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
 
     public on(event: "update", listener: () => void): this;
     // public on(event: string | symbol, listener: Function): this;
+    // tslint:disable-next-line:ban-types
     public on(event: string | symbol, listener: Function) {
         return super.on(event, listener);
     }
 
     public once(event: "update", listener: () => void): this;
     // public once(event: string | symbol, listener: Function): this;
+    // tslint:disable-next-line:ban-types
     public once(event: string | symbol, listener: Function) {
         return super.once(event, listener);
     }
@@ -253,7 +273,11 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
 
             if (!step.receivingChain) {
                 // got 1 message for current ratchet step, have to create ReceiverRatchet
-                step.receivingChain = await this.createChain(this.currentRatchetKey.privateKey, remoteRatchetKey, ReceivingRatchet);
+                step.receivingChain = await this.createChain(
+                    this.currentRatchetKey.privateKey,
+                    remoteRatchetKey,
+                    ReceivingRatchet,
+                );
             }
 
             const decryptedMessage = await step.receivingChain.decrypt(message.cipherText, message.counter);
@@ -289,7 +313,14 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
             }
             // if false then no incoming message with new ratchet key, using old DH ratchet
             if (!this.currentStep.sendingChain) {
-                this.currentStep.sendingChain = await this.createChain(this.currentRatchetKey.privateKey, this.currentStep.remoteRatchetKey, SendingRatchet);
+                if (!this.currentStep.remoteRatchetKey) {
+                    throw new Error("currentStep has empty remoteRatchetKey");
+                }
+                this.currentStep.sendingChain = await this.createChain(
+                    this.currentRatchetKey.privateKey,
+                    this.currentStep.remoteRatchetKey,
+                    SendingRatchet,
+                );
             }
 
             const encryptedMessage = await this.currentStep.sendingChain.encrypt(message);
@@ -337,7 +368,7 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
             ecKey = key;
         }
         for (const item of this.steps.items) {
-            if (await item.remoteRatchetKey.isEqual(ecKey)) {
+            if (await item.remoteRatchetKey!.isEqual(ecKey)) {
                 return true;
             }
         }
@@ -346,9 +377,9 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
 
     public async toJSON() {
         return {
-            remoteIdentity: await this.remoteIdentity.signingKey.thumbprint(),
-            ratchetKey: await Curve.ecKeyPairToJson(this.currentRatchetKey),
             counter: this.counter,
+            ratchetKey: await Curve.ecKeyPairToJson(this.currentRatchetKey),
+            remoteIdentity: await this.remoteIdentity.signingKey.thumbprint(),
             rootKey: this.rootKey,
             steps: await this.steps.toJSON(),
         } as IJsonAsymmetricRatchet;
@@ -392,8 +423,10 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
      *
      * @memberOf AsymmetricRatchet
      */
+    // tslint:disable-next-line:max-line-length
     protected async createChain(ourRatchetKey: ECDHPrivateKey, theirRatchetKey: ECPublicKey, ratchetClass: typeof ReceivingRatchet): Promise<ReceivingRatchet>;
     protected async createChain(ourRatchetKey: ECDHPrivateKey, theirRatchetKey: ECPublicKey, ratchetClass: typeof SendingRatchet): Promise<SendingRatchet>;
+    // tslint:disable-next-line:max-line-length
     protected async createChain(ourRatchetKey: ECDHPrivateKey, theirRatchetKey: ECPublicKey, ratchetClass: typeof ReceivingRatchet | typeof SendingRatchet) {
         // console.info(`${this.constructor.name}:${this.id}:Creating new ${ratchetClass.name}`);
         const derivedBytes = await Curve.deriveBytes(ourRatchetKey, theirRatchetKey);
@@ -507,9 +540,9 @@ export class DHRatchetStepStack extends Stack<DHRatchetStep> {
      * @memberOf DHRatchetStepStack
      */
     public getStep(remoteRatchetKey: ECPublicKey) {
-        let found: DHRatchetStep = void 0;
+        let found: DHRatchetStep | undefined;
         this.items.some((step) => {
-            if (step.remoteRatchetKey.id === remoteRatchetKey.id) {
+            if (step.remoteRatchetKey!.id === remoteRatchetKey.id) {
                 found = step;
             }
             return !!found;
