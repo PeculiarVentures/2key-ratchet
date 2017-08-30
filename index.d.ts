@@ -649,6 +649,15 @@ declare namespace DKeyRatchet {
     }
 
     /**
+     * Sets crypto engine
+     *
+     * @export
+     * @param {string} name     Name of engine
+     * @param {Crypto} crypto   WebCrypto implementation
+     */
+    export function setEngine(name: string, crypto: Crypto): void;
+
+    /**
      * Returns crypto engine
      * It throws exception if engine is empty.
      *
