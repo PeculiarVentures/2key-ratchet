@@ -2,9 +2,14 @@ machine:
   node:
     version: 6.9.1
 
+dependencies:
+  post:
+    - npm i coveralls  
+
 test:
   override:
     - npm run coverage
+  post:
     - npm run coveralls
 
 general:
