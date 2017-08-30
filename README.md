@@ -2,6 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/PeculiarVentures/2key-ratchet.svg?style=svg&circle-token=29f5d4fefececbe5668f0c0858cc583e4e130765)](https://circleci.com/gh/PeculiarVentures/2key-ratchet)
 [![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://raw.githubusercontent.com/PeculiarVentures/2key-ratchet/master/LICENSE.md)
+[![Coverage Status](https://coveralls.io/repos/github/PeculiarVentures/2key-ratchet/badge.svg?branch=master)](https://coveralls.io/github/PeculiarVentures/2key-ratchet?branch=master)
 
 
 `2key-ratchet` is an implementation of a [Double Ratchet](https://whispersystems.org/docs/specifications/doubleratchet/) protocol and [X3DH](https://whispersystems.org/docs/specifications/x3dh) in TypeScript utilizing WebCrypto. 

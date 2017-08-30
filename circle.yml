@@ -5,7 +5,7 @@ machine:
 test:
   override:
     - npm run coverage
-    # - npm run coveralls
+    - npm run coveralls
 
 general:
   branches:
