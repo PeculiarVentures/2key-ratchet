@@ -9,6 +9,7 @@
     "outDir": "./out",
     "importHelpers": true,
     "strict": true,
+    "strictPropertyInitialization": false,
     "experimentalDecorators": true
   }
 }
