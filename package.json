@@ -35,25 +35,25 @@
   ],
   "license": "https://github.com/PeculiarVentures/2key-ratchet/blob/master/LICENSE.md",
   "dependencies": {
-    "node-webcrypto-ossl": "^1.0.30",
+    "node-webcrypto-ossl": "^1.0.36",
     "pvtsutils": "^1.0.2",
-    "tslib": "^1.7.1",
+    "tslib": "^1.9.0",
     "tsprotobuf": "^1.0.11"
   },
   "devDependencies": {
-    "@types/chai": "^4.0.4",
-    "@types/mocha": "^2.2.42",
-    "@types/node": "^7.0.43",
-    "chai": "^4.1.1",
+    "@types/chai": "^4.1.2",
+    "@types/mocha": "^2.2.48",
+    "@types/node": "^7.0.56",
+    "chai": "^4.1.2",
     "live-server": "^1.2.0",
-    "mocha": "^3.5.0",
+    "mocha": "^3.5.3",
     "npm-run-all": "^3",
-    "nyc": "^11.1.0",
+    "nyc": "^11.6.0",
     "rollup": "^0.41.6",
     "rollup-plugin-node-builtins": "^2.1.2",
-    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-typescript": "^0.8.1",
-    "typescript": "^2.5.1",
+    "typescript": "^2.7.2",
     "watch": "^1.0.2"
   }
 }
