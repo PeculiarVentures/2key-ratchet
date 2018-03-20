@@ -28,7 +28,21 @@
     "dev": "npm-run-all -p --silent watch live",
     "coveralls": "nyc report --reporter=text-lcov | coveralls"
   },
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PeculiarVentures/2key-ratchet.git"
+  },
+  "keywords": [
+    "diffie-hellman",
+    "secp256r1",
+    "ecc",
+    "encryption",
+    "cryptography",
+    "webcrypto",
+    "session",
+    "integrity",
+    "messaging"
+  ],
   "author": "PeculiarVentures",
   "contributors": [
     "Miroshin Stepan<microshine@mail.ru>"
