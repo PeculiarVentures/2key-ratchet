@@ -9,11 +9,15 @@ coverage
 # npm
 node_modules
 
+# circleci
+.circleci
+
 # build
 out
 src
+examples
+test
 cSpell.json
-circle.yml
 rollup.*.js
 ts*.json
 
