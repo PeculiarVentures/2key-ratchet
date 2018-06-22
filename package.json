@@ -8,6 +8,7 @@
   "types": "index.d.ts",
   "scripts": {
     "test": "mocha",
+    "build": "npm run build:dist",
     "build:es5": "tsc",
     "build:dist": "npm run build:lib && npm run build:module",
     "build:module": "rollup -c",
