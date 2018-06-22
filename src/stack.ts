@@ -7,7 +7,6 @@
  *
  */
 
-import { ECPublicKey } from "./crypto";
 import { IJsonSerializable } from "./type";
 
 export class Stack<T extends IJsonSerializable> implements IJsonSerializable {

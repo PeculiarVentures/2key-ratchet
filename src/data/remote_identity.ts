@@ -9,7 +9,6 @@
 
 import { Curve, ECPublicKey } from "../crypto";
 import { IdentityProtocol } from "../protocol";
-import { AssocStorage } from "../storage";
 import { IJsonSerializable } from "../type";
 
 export interface IJsonRemoteIdentity {

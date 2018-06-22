@@ -8,8 +8,7 @@
  */
 
 import { DH_ALGORITHM_NAME, SIGN_ALGORITHM_NAME } from "../const";
-import { Curve, ECPublicKey, IECKeyPair } from "../crypto";
-import { AssocStorage } from "../storage";
+import { Curve, IECKeyPair } from "../crypto";
 import { IJsonSerializable } from "../type";
 
 export interface IJsonIdentity {

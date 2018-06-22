@@ -1,8 +1,9 @@
 import * as dgram from "dgram";
 import { EventEmitter } from "events";
+import { AddressInfo } from "net";
 import { Convert } from "pvtsutils";
-import { AsymmetricRatchet, Identity, MessageSignedProtocol } from "../classes";
-import { IdentityProtocol, PreKeyBundleProtocol, PreKeyMessageProtocol } from "../classes";
+import { AsymmetricRatchet, Identity, MessageSignedProtocol } from "../index";
+import { IdentityProtocol, PreKeyBundleProtocol, PreKeyMessageProtocol } from "../index";
 import { ADDRESS, CLIENT_PORT, SERVER_BUNDLE_PORT, SERVER_PORT } from "./const";
 
 export class Server extends EventEmitter {
@@ -44,7 +45,7 @@ export class Server extends EventEmitter {
                 server.emit("error", err);
             })
             .on("message", (data, info) => {
-                const buf = new Uint8Array(data).buffer;
+                const buf = new Uint8Array(data).buffer as ArrayBuffer;
                 server.onMessage(buf);
             });
         server.messenger.bind(SERVER_PORT, ADDRESS);
@@ -61,8 +62,8 @@ export class Server extends EventEmitter {
     public on(event: "close", listener: () => void): this;
     public on(event: "error", listener: (err: Error) => void): this;
     public on(event: "message", listener: (text: string) => void): this;
-    public on(event: "listening", listener: (address: dgram.AddressInfo) => void): this;
-    public on(event: string, listener: Function) {
+    public on(event: "listening", listener: (address: AddressInfo) => void): this;
+    public on(event: string, listener: (...args: any[]) => void) {
         return super.on(event, listener);
     }
 
@@ -70,8 +71,8 @@ export class Server extends EventEmitter {
     public once(event: "close", listener: () => void): this;
     public once(event: "error", listener: (err: Error) => void): this;
     public once(event: "message", listener: (text: string) => void): this;
-    public once(event: "listening", listener: (address: dgram.AddressInfo) => void): this;
-    public once(event: string, listener: Function) {
+    public once(event: "listening", listener: (address: AddressInfo) => void): this;
+    public once(event: string, listener: (...args: any[]) => void) {
         return super.once(event, listener);
     }
 

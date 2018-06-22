@@ -28,7 +28,7 @@ export class Secret {
     public static randomBytes(size: number) {
         const array = new Uint8Array(size);
         getEngine().crypto.getRandomValues(array);
-        return array.buffer;
+        return array.buffer as ArrayBuffer;
     }
 
     /**
@@ -101,7 +101,7 @@ export class Secret {
      */
     public static importAES(raw: ArrayBuffer) {
         // console.log("AES:", Convert.ToHex(raw));
-        return getEngine().crypto.subtle.importKey("raw", raw, AES_ALGORITHM, false, ["encrypt", "decrypt"]);
+        return getEngine().crypto.subtle.importKey("raw", raw, AES_ALGORITHM as any, false, ["encrypt", "decrypt"]);
     }
 
     /**
@@ -135,7 +135,7 @@ export class Secret {
         // https://www.ietf.org/rfc/rfc5869.txt
         // PRK = HMAC-Hash(salt, IKM)
         if (!salt) {
-            salt = await this.importHMAC(new Uint8Array(32).buffer);
+            salt = await this.importHMAC(new Uint8Array(32).buffer as ArrayBuffer);
         }
         const PRKBytes = await this.sign(salt, IKM);
         const infoBuffer = new ArrayBuffer(32 + info.byteLength + 1);
@@ -155,7 +155,7 @@ export class Secret {
         const PRK = await this.importHMAC(PRKBytes);
         const T: ArrayBuffer[] = [new ArrayBuffer(0)];
         for (let i = 0; i < keysCount; i++) {
-            T[i + 1] = await this.sign(PRK, combine(T[i], info, new Uint8Array([i + 1]).buffer));
+            T[i + 1] = await this.sign(PRK, combine(T[i], info, new Uint8Array([i + 1]).buffer as ArrayBuffer));
         }
         return T.slice(1);
     }

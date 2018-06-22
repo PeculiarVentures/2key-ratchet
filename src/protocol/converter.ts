@@ -15,7 +15,7 @@ export class ECDSAPublicKeyConverter {
         return new Uint8Array(value.serialize());
     }
     public static async get(value: Uint8Array) {
-        return ECPublicKey.importKey(value.buffer, "ECDSA");
+        return ECPublicKey.importKey(value.buffer as ArrayBuffer, "ECDSA");
     }
 }
 
@@ -24,7 +24,7 @@ export class ECDHPublicKeyConverter {
         return new Uint8Array(value.serialize());
     }
     public static async get(value: Uint8Array) {
-        return ECPublicKey.importKey(value.buffer, "ECDH");
+        return ECPublicKey.importKey(value.buffer as ArrayBuffer, "ECDH");
     }
 }
 
