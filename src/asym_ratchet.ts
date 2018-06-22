@@ -8,17 +8,17 @@
  */
 
 import { EventEmitter } from "events";
-import { combine, Convert } from "pvtsutils";
-import { INFO_RATCHET, INFO_TEXT, MAX_RATCHET_STACK_SIZE, SECRET_KEY_NAME } from "./const";
-import { Curve, IECKeyPair, ECPublicKey, Secret } from "./crypto";
+import { combine } from "pvtsutils";
+import { INFO_RATCHET, INFO_TEXT, MAX_RATCHET_STACK_SIZE } from "./const";
+import { Curve, ECPublicKey, IECKeyPair, Secret } from "./crypto";
 import { Identity } from "./data";
 import { RemoteIdentity } from "./data/remote_identity";
 import { MessageSignedProtocol, PreKeyBundleProtocol, PreKeyMessageProtocol } from "./protocol";
 import { Stack } from "./stack";
-import { ReceivingRatchet, SendingRatchet, SymmetricRatchet } from "./sym_ratchet";
+import { ReceivingRatchet, SendingRatchet } from "./sym_ratchet";
 import { IJsonReceivingRatchet, IJsonSymmetricRatchet } from "./sym_ratchet";
 import { IJsonSerializable } from "./type";
-import { ECDHPrivateKey, ECDHPublicKey, HMACCryptoKey } from "./type";
+import { ECDHPrivateKey, HMACCryptoKey } from "./type";
 
 /**
  * Authentication. Calculates rootKey for DH ratchet
@@ -68,7 +68,7 @@ async function authenticateA(
     for (let i = 0; i < _F.length; i++) {
         _F[i] = 0xff;
     }
-    const F = _F.buffer;
+    const F = _F.buffer as ArrayBuffer;
     const KM = combine(F, DH1, DH2, DH3, DH4); // TODO: F || KM, where F = 0xFF * N
     const keys = await Secret.HKDF(KM, 1, void 0, INFO_TEXT);
     return await Secret.importHMAC(keys[0]);
@@ -107,7 +107,7 @@ async function authenticateB(
     for (let i = 0; i < _F.length; i++) {
         _F[i] = 0xff;
     }
-    const F = _F.buffer;
+    const F = _F.buffer as ArrayBuffer;
     const KM = combine(F, DH1, DH2, DH3, DH4); // TODO: F || KM, where F = 0xFF * N
     const keys = await Secret.HKDF(KM, 1, void 0, INFO_TEXT);
     return await Secret.importHMAC(keys[0]);
@@ -231,16 +231,12 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
     }
 
     public on(event: "update", listener: () => void): this;
-    // public on(event: string | symbol, listener: Function): this;
-    // tslint:disable-next-line:ban-types
-    public on(event: string | symbol, listener: Function) {
+    public on(event: string | symbol, listener: (...args: any[]) => void) {
         return super.on(event, listener);
     }
 
     public once(event: "update", listener: () => void): this;
-    // public once(event: string | symbol, listener: Function): this;
-    // tslint:disable-next-line:ban-types
-    public once(event: string | symbol, listener: Function) {
+    public once(event: string | symbol, listener: (...args: any[]) => void) {
         return super.once(event, listener);
     }
 
@@ -425,6 +421,7 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
      */
     // tslint:disable-next-line:max-line-length
     protected async createChain(ourRatchetKey: ECDHPrivateKey, theirRatchetKey: ECPublicKey, ratchetClass: typeof ReceivingRatchet): Promise<ReceivingRatchet>;
+    // tslint:disable-next-line:max-line-length
     protected async createChain(ourRatchetKey: ECDHPrivateKey, theirRatchetKey: ECPublicKey, ratchetClass: typeof SendingRatchet): Promise<SendingRatchet>;
     // tslint:disable-next-line:max-line-length
     protected async createChain(ourRatchetKey: ECDHPrivateKey, theirRatchetKey: ECPublicKey, ratchetClass: typeof ReceivingRatchet | typeof SendingRatchet) {

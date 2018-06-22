@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { AssocStorage } from "../classes/storage";
+import { AssocStorage } from "../src/storage";
 
 context("AssocStorage", () => {
 

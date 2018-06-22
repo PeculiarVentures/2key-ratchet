@@ -1,7 +1,8 @@
 import * as dgram from "dgram";
 import { EventEmitter } from "events";
+import { AddressInfo } from "net";
 import { Convert } from "pvtsutils";
-import { AsymmetricRatchet, Identity, MessageSignedProtocol, PreKeyBundleProtocol } from "../classes";
+import { AsymmetricRatchet, Identity, MessageSignedProtocol, PreKeyBundleProtocol } from "../index";
 import { ADDRESS, CLIENT_PORT, SERVER_BUNDLE_PORT, SERVER_PORT } from "./const";
 
 export class Client extends EventEmitter {
@@ -21,7 +22,7 @@ export class Client extends EventEmitter {
                 client.emit("error", err);
             })
             .on("message", (data, info) => {
-                const buf = new Uint8Array(data).buffer;
+                const buf = new Uint8Array(data).buffer as ArrayBuffer;
                 if (info.port === SERVER_BUNDLE_PORT) {
                     client.onBundle(buf);
                 } else {
@@ -41,8 +42,8 @@ export class Client extends EventEmitter {
     public on(event: "connected", listener: () => void): this;
     public on(event: "error", listener: (err: Error) => void): this;
     public on(event: "message", listener: (text: string) => void): this;
-    public on(event: "listening", listener: (address: dgram.AddressInfo) => void): this;
-    public on(event: string, listener: Function) {
+    public on(event: "listening", listener: (address: AddressInfo) => void): this;
+    public on(event: string, listener: (...args: any[]) => void) {
         return super.on(event, listener);
     }
 
@@ -50,8 +51,8 @@ export class Client extends EventEmitter {
     public once(event: "close", listener: () => void): this;
     public once(event: "error", listener: (err: Error) => void): this;
     public once(event: "message", listener: (text: string) => void): this;
-    public once(event: "listening", listener: (address: dgram.AddressInfo) => void): this;
-    public once(event: string, listener: Function) {
+    public once(event: "listening", listener: (address: AddressInfo) => void): this;
+    public once(event: string, listener: (...args: any[]) => void) {
         return super.once(event, listener);
     }
 

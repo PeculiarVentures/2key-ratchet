@@ -7,8 +7,6 @@
  *
  */
 
-import { Identity, ISession } from "./type";
-
 export class AssocStorage<T> {
     protected items: { [key: string]: T } = {};
 

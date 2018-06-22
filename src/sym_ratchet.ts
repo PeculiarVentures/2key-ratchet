@@ -7,10 +7,9 @@
  *
  */
 
-import { Convert } from "pvtsutils";
 import { INFO_MESSAGE_KEYS } from "./const";
-import { IECKeyPair, ECPublicKey, Secret } from "./crypto";
-import { HMACCryptoKey, ISymmetricKDFResult, RatchetKey } from "./type";
+import { Secret } from "./crypto";
+import { HMACCryptoKey, ISymmetricKDFResult } from "./type";
 import { IJsonSerializable } from "./type";
 
 // Constants for KDF_CK function
@@ -84,8 +83,8 @@ export abstract class SymmetricRatchet implements IJsonSerializable {
      * @memberOf SymmetricRatchet
      */
     protected async calculateKey(rootKey: CryptoKey) {
-        const cipherKeyBytes = await Secret.sign(rootKey, CIPHER_KEY_KDF_INPUT);
-        const nextRootKeyBytes = await Secret.sign(rootKey, ROOT_KEY_KDF_INPUT);
+        const cipherKeyBytes = await Secret.sign(rootKey, CIPHER_KEY_KDF_INPUT as any);
+        const nextRootKeyBytes = await Secret.sign(rootKey, ROOT_KEY_KDF_INPUT as any);
 
         const res: ISymmetricKDFResult = {
             cipher: cipherKeyBytes,
