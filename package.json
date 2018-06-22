@@ -7,8 +7,7 @@
   "jsnext:main": "dist/2key-ratchet.lib.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "mocha out/test",
-    "build": "npm run build:dist",
+    "test": "mocha",
     "build:es5": "tsc",
     "build:dist": "npm run build:lib && npm run build:module",
     "build:module": "rollup -c",
@@ -18,14 +17,9 @@
     "tslint": "tslint 'src/**/*.ts'",
     "pub": "npm version patch && npm publish && git push",
     "sync": "git ac && git pull --rebase && git push",
-    "precoverage": "npm run build:map",
     "coverage": "nyc npm test",
     "precoveragehtml": "npm run coverage",
     "coveragehtml": "nyc report -r html",
-    "watch": "watch 'npm run coveragehtml' lib/ src/ test/",
-    "live": "live-server -q --port=4005 --ignorePattern='(js|css|png)$' coverage",
-    "predev": "if [ ! -f coverage/index.html ]; then mkdir coverage; cp .waiting.html coverage/index.html; fi",
-    "dev": "npm-run-all -p --silent watch live",
     "coveralls": "nyc report --reporter=text-lcov | coveralls"
   },
   "repository": {
@@ -49,25 +43,41 @@
   ],
   "license": "https://github.com/PeculiarVentures/2key-ratchet/blob/master/LICENSE.md",
   "dependencies": {
-    "node-webcrypto-ossl": "^1.0.36",
+    "node-webcrypto-ossl": "^1.0.37",
     "pvtsutils": "^1.0.2",
-    "tslib": "^1.9.0",
-    "tsprotobuf": "^1.0.11"
+    "tslib": "^1.9.2",
+    "tsprotobuf": "^1.0.12"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.2",
-    "@types/mocha": "^2.2.48",
-    "@types/node": "^7.0.56",
+    "@types/chai": "^4.1.4",
+    "@types/mocha": "^5.2.3",
+    "@types/node": "^10.3.4",
     "chai": "^4.1.2",
     "live-server": "^1.2.0",
-    "mocha": "^3.5.3",
-    "npm-run-all": "^3",
-    "nyc": "^11.6.0",
-    "rollup": "^0.41.6",
+    "mocha": "^5.2.0",
+    "npm-run-all": "^4.1.3",
+    "nyc": "^12.0.2",
+    "rollup": "^0.61.1",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-typescript": "^0.8.1",
-    "typescript": "^2.7.2",
-    "watch": "^1.0.2"
+    "ts-node": "^6.1.2",
+    "typescript": "^2.9.2"
+  },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "**/*.d.ts"
+    ],
+    "reporter": [
+      "text-summary",
+      "html"
+    ]
   }
 }
