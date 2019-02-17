@@ -79,7 +79,7 @@ export class Server extends EventEmitter {
     public async send(text: string) {
         const protocol = await this.cipher.encrypt(Convert.FromUtf8String(text));
         const buf = await protocol.exportProto();
-        this.messenger.send(new Buffer(buf), CLIENT_PORT, ADDRESS);
+        this.messenger.send(Buffer.from(buf), CLIENT_PORT, ADDRESS);
     }
 
     protected async onMessage(data: ArrayBuffer) {
@@ -104,7 +104,7 @@ export class Server extends EventEmitter {
 
     protected async onInfo(info: dgram.RemoteInfo) {
         const bundle = await this.bundle.exportProto();
-        this.info.send(new Buffer(bundle), info.port, info.address);
+        this.info.send(Buffer.from(bundle), info.port, info.address);
     }
 
 }

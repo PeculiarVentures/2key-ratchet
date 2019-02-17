@@ -63,7 +63,7 @@ export class Client extends EventEmitter {
     public async send(text: string) {
         const protocol = await this.cipher.encrypt(Convert.FromUtf8String(text));
         const buf = await protocol.exportProto();
-        this.socket.send(new Buffer(buf), SERVER_PORT, ADDRESS);
+        this.socket.send(Buffer.from(buf), SERVER_PORT, ADDRESS);
     }
 
     protected async onBundle(data: ArrayBuffer) {
@@ -75,7 +75,7 @@ export class Client extends EventEmitter {
     protected async onMessage(data: ArrayBuffer) {
         const protocol = await MessageSignedProtocol.importProto(data);
         const text = await this.cipher.decrypt(protocol);
-        this.emit("message", new Buffer(text).toString());
+        this.emit("message", Buffer.from(text).toString());
     }
 
 }
