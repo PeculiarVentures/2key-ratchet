@@ -7,12 +7,12 @@
  *
  */
 
- /**
-  * Crypto engine structure
-  *
-  * @export
-  * @interface ICryptoEngine
-  */
+/**
+ * Crypto engine structure
+ *
+ * @export
+ * @interface ICryptoEngine
+ */
 export interface ICryptoEngine {
     name: string;
     crypto: Crypto;
@@ -22,10 +22,10 @@ let engine: ICryptoEngine | null = null;
 
 if (typeof self === "undefined") {
     // tslint:disable-next-line:no-var-requires
-    const WebCrypto = require("node-webcrypto-ossl") as typeof Crypto;
+    const { Crypto } = require("@peculiar/webcrypto");
     engine = {
-        crypto: new WebCrypto(),
-        name: "WebCrypto OpenSSL",
+        crypto: new Crypto(),
+        name: "@peculiar/webcrypto",
     };
 } else {
     engine = {
