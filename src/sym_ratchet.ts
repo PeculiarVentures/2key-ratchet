@@ -41,7 +41,7 @@ export interface IJsonSymmetricRatchet {
 export abstract class SymmetricRatchet implements IJsonSerializable {
 
     public static async fromJSON<T extends SymmetricRatchet>(
-        this: { new (rootKey: CryptoKey): T },
+        this: new (rootKey: CryptoKey) => T,
         obj: IJsonSymmetricRatchet,
     ) {
         const res = new this(obj.rootKey);
