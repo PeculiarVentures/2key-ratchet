@@ -1,5 +1,6 @@
 import { Identity } from "../src/data";
 import { PreKeyBundleProtocol } from "../src/protocol";
+import "./init";
 
 export async function createIdentity(id: number) {
     const identity = await Identity.create(id, 1);

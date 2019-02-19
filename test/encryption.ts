@@ -3,6 +3,7 @@ import { Convert, isEqual } from "pvtsutils";
 import { AsymmetricRatchet } from "../src/asym_ratchet";
 import { MessageSignedProtocol, PreKeyMessageProtocol } from "../src/protocol";
 import { createIdentity, createPreKeyBundle } from "./helper";
+import "./init";
 
 const MESSAGE = Convert.FromUtf8String("Привет!");
 const TIMES = 10;

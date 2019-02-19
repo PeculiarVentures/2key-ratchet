@@ -1,5 +1,6 @@
 import { assert } from "chai";
 import { Curve, ECPublicKey } from "../src/crypto";
+import "./init";
 
 context("Crypto", () => {
 

@@ -20,14 +20,7 @@ export interface ICryptoEngine {
 
 let engine: ICryptoEngine | null = null;
 
-if (typeof self === "undefined") {
-    // tslint:disable-next-line:no-var-requires
-    const { Crypto } = require("@peculiar/webcrypto");
-    engine = {
-        crypto: new Crypto(),
-        name: "@peculiar/webcrypto",
-    };
-} else {
+if (typeof self !== "undefined") {
     engine = {
         crypto: (self as any).crypto,
         name: "WebCrypto",

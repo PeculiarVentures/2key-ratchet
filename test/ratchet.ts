@@ -5,6 +5,7 @@ import { Secret } from "../src/crypto";
 import { MessageSignedProtocol, PreKeyBundleProtocol, PreKeyMessageProtocol } from "../src/protocol";
 import { ReceivingRatchet, SendingRatchet } from "../src/sym_ratchet";
 import { createIdentity, createPreKeyBundle } from "./helper";
+import "./init";
 
 // tslint:disable-next-line:max-line-length
 const PREKEY_BUNDLE = "0001080112c80100010a407d36fdb6ca56228dc9f0f5d95c1b2208bc170689ae30591d4f3394d123ddc399e06ff32694138f2fa120856bf26bc2330c44c3281b98a43721c66a8d59f672d412406fd1dd2fb4888007747c5bb8d8c4f137c48f829c130b6f3e4121ea8a5e84d604233f6e358922296eb8a9cfd1cdf26589aaa2d26dd327c91058e09a6256859e171a409b56a6e41227737dc73def7cc42d5e436050bd5dcce2059f1ca597669be70b8b70a610835d7e7048f7857d0812da1fa31c3dd7540b7192b44902cab21fdab14b1a002288010001080112401e3c3a63c6c16fc17b13206c3dffd1a88f6d878ab5e89651fc81acc8da29903b985379d4b10f0c7c7b15d7f29e6bc81aab1ce1f92a2fc5751a10ed7ee286fc041a4063f2678382893923f0f273bfc9cabb4eb1c6ce49416d7b04a2fe1f064d472b0ec3dc2a703da56e27176386c2a6ce73c09a08f588bcccc73968cf53356ad7e275";

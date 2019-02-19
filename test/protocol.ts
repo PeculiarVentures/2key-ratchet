@@ -3,6 +3,7 @@ import { isEqual } from "pvtsutils";
 import { IdentityProtocol, PreKeyBundleProtocol } from "../src/protocol";
 import { PreKeySignedProtocol } from "../src/protocol/prekey_signed";
 import { createIdentity, createPreKeyBundle } from "./helper";
+import "./init";
 
 context("Protocol", () => {
 

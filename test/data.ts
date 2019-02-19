@@ -1,8 +1,9 @@
 import { assert } from "chai";
-import { Convert, isEqual } from "pvtsutils";
+import { isEqual } from "pvtsutils";
 import { Identity, RemoteIdentity } from "../src/data";
 import { IdentityProtocol } from "../src/protocol";
-import { createIdentity, createPreKeyBundle } from "./helper";
+import { createIdentity } from "./helper";
+import "./init";
 
 context("Data", () => {
 
