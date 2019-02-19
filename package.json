@@ -37,12 +37,12 @@
   ],
   "license": "https://github.com/PeculiarVentures/2key-ratchet/blob/master/LICENSE.md",
   "dependencies": {
-    "@peculiar/webcrypto": "file:../webcrypto",
     "pvtsutils": "^1.0.4",
     "tslib": "^1.9.3",
     "tsprotobuf": "^1.0.12"
   },
   "devDependencies": {
+    "@peculiar/webcrypto": "^1.0.5",
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.6",
     "@types/node": "^10.3.4",
