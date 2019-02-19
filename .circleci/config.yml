@@ -18,9 +18,6 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - ./node_modules
-      - run:
-          name: install-coveralls
-          command: npm install coveralls
       - run: # run tests with code coverage
           name: test-code-coverage
           command: npm run coverage
