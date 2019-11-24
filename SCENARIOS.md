@@ -2,7 +2,7 @@
 
 Beyond providing an end-to-end encrypted session, the Double Ratchet and X3DH protocols enable you to keep the same session active without tearing it down. This is a particularly important property when dealing with long lived web-like sessions (think cookies).
 
-Progressive Web Applications (PWAs) in particular can benefit from the traits offered by these protocols, with that said the utility is not limited to these cases, some use csaes that might be interesting include:
+Progressive Web Applications (PWAs) in particular can benefit from the traits offered by these protocols, with that said the utility is not limited to these cases, some use cases that might be interesting include:
 
 | **SCENARIO**                | **DESCRIPTION**                                            |
 |-----------------------------|------------------------------------------------------------|
