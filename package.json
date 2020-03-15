@@ -37,23 +37,23 @@
   ],
   "license": "https://github.com/PeculiarVentures/2key-ratchet/blob/master/LICENSE.md",
   "dependencies": {
-    "pvtsutils": "^1.0.4",
-    "tslib": "^1.9.3",
-    "tsprotobuf": "^1.0.12"
+    "pvtsutils": "^1.0.9",
+    "tslib": "^1.11.1",
+    "tsprotobuf": "^1.0.13"
   },
   "devDependencies": {
-    "@peculiar/webcrypto": "^1.0.5",
-    "@types/chai": "^4.1.7",
-    "@types/mocha": "^5.2.6",
-    "@types/node": "^10.3.4",
+    "@peculiar/webcrypto": "^1.0.23",
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^12.12.30",
     "chai": "^4.2.0",
-    "coveralls": "^3.0.2",
-    "mocha": "^5.2.0",
-    "nyc": "^13.3.0",
-    "rollup": "^1.2.2",
-    "rollup-plugin-typescript": "^1.0.0",
-    "ts-node": "^8.0.2",
-    "typescript": "^3.3.3"
+    "coveralls": "^3.0.9",
+    "mocha": "^7.1.0",
+    "nyc": "^15.0.0",
+    "rollup": "^2.0.6",
+    "rollup-plugin-typescript2": "^0.26.0",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.8.3"
   },
   "nyc": {
     "extension": [
@@ -70,5 +70,10 @@
       "text-summary",
       "html"
     ]
+  },
+  "mocha": {
+    "require": "ts-node/register",
+    "extension": ["ts"],
+    "watch-files": "test/**/*.ts"
   }
 }

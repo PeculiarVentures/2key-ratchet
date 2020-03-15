@@ -1,45 +1,39 @@
-import typescript from "rollup-plugin-typescript";
-import ts from "typescript";
+import typescript from "rollup-plugin-typescript2";
+const pkg = require("./package.json");
 
-let pkg = require("./package.json");
-
-let banner = [
+const banner = [
   "/**",
-  " *",
-  " * 2key-ratchet",
-  " * Copyright (c) 2019 Peculiar Ventures, Inc",
-  " * Based on https://whispersystems.org/docs/specifications/doubleratchet/ and",
-  " * https://whispersystems.org/docs/specifications/x3dh/ by Open Whisper Systems",
-  " *",
+  " * Copyright (c) 2016-2020, Peculiar Ventures, All rights reserved.",
   " */",
-]
-
+  "",
+].join("\n");
 const input = "src/index.ts";
 const external = Object.keys(pkg.dependencies).concat(["events"]);
 
-export default [
-  {
-    input,
-    plugins: [
-      typescript({ typescript: ts, target: "esnext", removeComments: true }),
-    ],
-    external,
-    output: {
-      banner: banner.join("\n"),
+export default {
+  input,
+  plugins: [
+    typescript({
+      check: true,
+      clean: true,
+      tsconfigOverride: {
+        compilerOptions: {
+          module: "ES2015",
+        }
+      }
+    }),
+  ],
+  external,
+  output: [
+    {
+      banner,
       file: pkg.main,
       format: "cjs",
     },
-  },
-  {
-    input,
-    plugins: [
-      typescript({ typescript: ts, target: "esnext", removeComments: true }),
-    ],
-    external,
-    output: {
-      banner: banner.join("\n"),
+    {
+      banner,
       file: pkg.module,
       format: "es",
     },
-  },
-];
+  ],
+};
