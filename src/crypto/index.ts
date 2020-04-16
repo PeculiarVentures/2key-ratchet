@@ -7,6 +7,7 @@
  *
  */
 
+export * from "./crypto";
 export * from "./key_pair";
 export * from "./public_key";
 export * from "./curve";
