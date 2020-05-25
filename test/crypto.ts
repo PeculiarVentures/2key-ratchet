@@ -8,7 +8,7 @@ context("Crypto", () => {
 
         it("generate 100 times", async () => {
             for (let i = 0; i < 100; i++) {
-                const keys = await Curve.generateKeyPair("ECDSA");
+                const keys = await Curve.generateKeyPair("ECDSA", false);
                 const raw = keys.publicKey.serialize();
 
                 let pkey: ECPublicKey;

@@ -26,10 +26,11 @@ export class Curve {
      *
      * @memberOf Curve
      */
-    public static async generateKeyPair(type: ECKeyType) {
+    public static async generateKeyPair(type: ECKeyType, extractable: boolean) {
         const name = type;
-        const usage = type === "ECDSA" ? ["sign", "verify"] : ["deriveKey", "deriveBits"];
-        const keys = await getEngine().crypto.subtle.generateKey({ name, namedCurve: this.NAMED_CURVE }, false, usage);
+        const usage: KeyUsage[] = type === "ECDSA" ? ["sign", "verify"] : ["deriveKey", "deriveBits"];
+        const keys = await getEngine().crypto.subtle
+            .generateKey({ name, namedCurve: this.NAMED_CURVE }, extractable, usage);
         const publicKey = await ECPublicKey.create(keys.publicKey);
         const res: IECKeyPair = {
             privateKey: keys.privateKey,

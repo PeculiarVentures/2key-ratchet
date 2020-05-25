@@ -121,6 +121,10 @@ export interface IJsonAsymmetricRatchet {
     steps: IJsonDHRatchetStep[];
 }
 
+export interface IAsymmetricRatchetOptions {
+    exportableKeys?: boolean;
+}
+
 /**
  * Implementation Diffie-Hellman ratchet
  * https://whispersystems.org/docs/specifications/doubleratchet/#diffie-hellman-ratchet
@@ -140,9 +144,12 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
      *
      * @memberOf AsymmetricRatchet
      */
-    public static async create(identity: Identity, protocol: PreKeyBundleProtocol | PreKeyMessageProtocol) {
+    public static async create(
+        identity: Identity,
+        protocol: PreKeyBundleProtocol | PreKeyMessageProtocol,
+        options: IAsymmetricRatchetOptions = {}) {
         let rootKey: HMACCryptoKey;
-        const ratchet = new AsymmetricRatchet();
+        const ratchet = new AsymmetricRatchet(options);
 
         if (protocol instanceof PreKeyBundleProtocol) {
             // PreKey Bundle
@@ -226,7 +233,7 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
     protected steps = new DHRatchetStepStack(MAX_RATCHET_STACK_SIZE);
     protected promises: { [key: string]: Promise<any> } = {};
 
-    protected constructor() {
+    protected constructor(public options: IAsymmetricRatchetOptions = {}) {
         super();
     }
 
@@ -405,7 +412,7 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
      * @memberOf AsymmetricRatchet
      */
     protected generateRatchetKey() {
-        return Curve.generateKeyPair("ECDH");
+        return Curve.generateKeyPair("ECDH", !!this.options.exportableKeys);
     }
 
     /**

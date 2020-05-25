@@ -31,18 +31,18 @@ export class Identity implements IJsonSerializable {
         return res;
     }
 
-    public static async create(id: number, signedPreKeyAmount = 0, preKeyAmount = 0) {
-        const signingKey = await Curve.generateKeyPair(SIGN_ALGORITHM_NAME);
-        const exchangeKey = await Curve.generateKeyPair(DH_ALGORITHM_NAME);
+    public static async create(id: number, signedPreKeyAmount = 0, preKeyAmount = 0, extractable = false) {
+        const signingKey = await Curve.generateKeyPair(SIGN_ALGORITHM_NAME, extractable);
+        const exchangeKey = await Curve.generateKeyPair(DH_ALGORITHM_NAME, extractable);
         const res = new Identity(id, signingKey, exchangeKey);
         res.createdAt = new Date();
         // generate preKey
         for (let i = 0; i < preKeyAmount; i++) {
-            res.preKeys.push(await Curve.generateKeyPair("ECDH"));
+            res.preKeys.push(await Curve.generateKeyPair("ECDH", extractable));
         }
         // generate signedPreKey
         for (let i = 0; i < signedPreKeyAmount; i++) {
-            res.signedPreKeys.push(await Curve.generateKeyPair("ECDH"));
+            res.signedPreKeys.push(await Curve.generateKeyPair("ECDH", extractable));
         }
         return res;
     }

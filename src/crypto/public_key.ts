@@ -74,7 +74,7 @@ export class ECPublicKey {
             x,
             y,
         };
-        const usage = (type === "ECDSA" ? ["verify"] : []);
+        const usage: KeyUsage[] = (type === "ECDSA" ? ["verify"] : []);
         const key = await getEngine().crypto.subtle
             .importKey("jwk", jwk, { name: type, namedCurve: Curve.NAMED_CURVE }, true, usage);
         const res = await ECPublicKey.create(key);
