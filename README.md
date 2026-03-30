@@ -8,7 +8,7 @@
 [![NPM](https://nodei.co/npm/2key-ratchet.png)](https://nodei.co/npm/2key-ratchet/)
 
 
-`2key-ratchet` is an implementation of a [Double Ratchet](https://whispersystems.org/docs/specifications/doubleratchet/) protocol and [X3DH](https://whispersystems.org/docs/specifications/x3dh) in TypeScript utilizing WebCrypto. 
+`2key-ratchet` is an implementation of the [Double Ratchet](https://whispersystems.org/docs/specifications/doubleratchet/) protocol and [X3DH](https://whispersystems.org/docs/specifications/x3dh) key agreement, available in both TypeScript (using WebCrypto) and Go. The two implementations are byte-level compatible and validated against each other through cross-language interop tests.
 
 The Double Ratchet protocol and X3DH were designed with goals of providing both forward secrecy and cryptographic deniability. Importantly there have been several independent [security reviews](https://eprint.iacr.org/2016/1013.pdf) that concluded they deliver on those goals.
 
@@ -49,14 +49,20 @@ The Double Ratchet protocol is session-oriented. Peers establish a `session` wit
 
 ## Size and Dependencies
 
+### TypeScript
+
 | Name            | Size   | Description                                    |
 |-----------------|--------|------------------------------------------------|
 | 2key-ratchet.js |  66 Kb | UMD module without external modules            | 
 
 __NOTE:__ You will also have to import [tslib](https://github.com/Microsoft/tslib) and [protobufjs](https://github.com/dcodeIO/ProtoBuf.js/#browsers) for use in the browser.
 
+### Go
 
-## Instructions
+The Go implementation depends on `golang.org/x/crypto` (HKDF) and `github.com/gorilla/websocket` (WebSocket server). No CGo, no protobuf code generation.
+
+
+## TypeScript
 
 ### Installation
 
@@ -166,6 +172,47 @@ return DKeyRatchet.PreKeyMessageProtocol.importProto(BobMessage)
 ```
 
 We have a [complete example you can look at here](https://github.com/PeculiarVentures/2key-ratchet/tree/master/src/examples).
+
+## Go
+
+A full Go implementation lives in the [`go/`](go/) directory, including the ratchet protocol, wire format, webcrypto-socket server, and webcrypto-local action dispatch with the `CryptoProvider` interface.
+
+### Installation
+
+```
+go get github.com/PeculiarVentures/2key-ratchet/go
+```
+
+### Usage
+
+```go
+import ratchet "github.com/PeculiarVentures/2key-ratchet/go"
+
+// Generate an identity
+identity, _ := ratchet.GenerateIdentity(1, 10, 0)
+
+// Start the webcrypto-socket server
+server, _ := ratchet.NewWebCryptoServer(ratchet.ServerConfig{
+    Address:        "127.0.0.1:31337",
+    TLSCert:        tlsCert,
+    Identity:       identity,
+    CryptoProvider: myCryptoProvider, // implements ratchet.CryptoProvider
+    OnChallenge: func(pin, origin string) bool {
+        return showPINDialog(pin, origin)
+    },
+})
+server.ListenAndServe(ctx)
+```
+
+The Go implementation is byte-level compatible with TypeScript v1.0.18 and validated through 43 tests, including cross-language interop tests and live integration tests against the TS client SDK. See [`go/README.md`](go/README.md) for the full API reference, known limitations, and protocol compatibility notes.
+
+### Interop testing
+
+The `interop/` directory contains a Node.js test harness that generates cross-language test vectors and runs the TS client SDK against the Go server. Both implementations produce identical bytes at every protocol step.
+
+```bash
+cd interop && npm install && cd ../go && go test -v ./...
+```
 
 ## Contributing
 
