@@ -1,0 +1,144 @@
+{
+  "bob": {
+    "id": 1,
+    "signingPub": "04074fa59f8069afb9ee10d77fa6ea96a74ca4c39b843b9ec528b9fdbc019ba5f5c6d57e12472ec81a5ac1d647d8427ba195aa9459c2f9d55a951bf0db83d59ec1",
+    "signingPriv": {
+      "kty": "EC",
+      "crv": "P-256",
+      "key_ops": [
+        "sign"
+      ],
+      "ext": true,
+      "d": "L0KKlhS3ftHX--PCSGUw70XONLQXwk9ShlnG4ssmqdI",
+      "x": "B0-ln4Bpr7nuENd_puqWp0ykw5uEO57FKLn9vAGbpfU",
+      "y": "xtV-EkcuyBpawdZH2EJ7oZWqlFnC-dValRvw24PVnsE"
+    },
+    "exchangePub": "04aac7b827341b0880d9a4a1a60f4146fb2713c21ea8b6227da5883a90da3d1de3f07d61dcd0777296e6f60f30a53bbc0169b9ae4379bed8e57cbe00123c513502",
+    "exchangePriv": {
+      "kty": "EC",
+      "crv": "P-256",
+      "key_ops": [
+        "deriveKey",
+        "deriveBits"
+      ],
+      "ext": true,
+      "d": "6GOIHGpJ-uAx6NGGBJPbyjJV7ihz6xt7GjmD1kL4OE4",
+      "x": "qse4JzQbCIDZpKGmD0FG-ycTwh6otiJ9pYg6kNo9HeM",
+      "y": "8H1h3NB3cpbm9g8wpTu8AWm5rkN5vtjlfL4AEjxRNQI"
+    },
+    "signedPreKeyPub": "04f9d6762be560e2c9f3a1c62fd4c34e8e4470b29ebeda8a37ec689c9c45b031d92d65961bc7fd290203ebeb1955a00b2f46fb076d86d649778bf2268d08ef3478",
+    "signedPreKeyPriv": {
+      "kty": "EC",
+      "crv": "P-256",
+      "key_ops": [
+        "deriveKey",
+        "deriveBits"
+      ],
+      "ext": true,
+      "d": "MVNGneTRKW4XhfJJ2zlkV9JEFQWUOhAOC0gNw4st944",
+      "x": "-dZ2K-Vg4snzocYv1MNOjkRwsp6-2oo37GicnEWwMdk",
+      "y": "LWWWG8f9KQID6-sZVaALL0b7B22G1kl3i_ImjQjvNHg"
+    },
+    "oneTimePreKeyPub": "045b764a5223c363ee953e42ca8528892f6348ec15bfccc703369d9ff4890b34421b0e16b788db416c31037bf8f2e6392164823737d22bc76d0c640842e598c26e",
+    "oneTimePreKeyPriv": {
+      "kty": "EC",
+      "crv": "P-256",
+      "key_ops": [
+        "deriveKey",
+        "deriveBits"
+      ],
+      "ext": true,
+      "d": "DkzXi7m9wLHHyU-tvfVrM0wvWDS4r022H_mhfgdOtkA",
+      "x": "W3ZKUiPDY-6VPkLKhSiJL2NI7BW_zMcDNp2f9IkLNEI",
+      "y": "Gw4Wt4jbQWwxA3v48uY5IWSCNzfSK8dtDGQIQuWYwm4"
+    }
+  },
+  "alice": {
+    "id": 2,
+    "signingPub": "045bad0f7f122f0fd3b33d0d0f0de05f23efb6afaa2e08f8c5b38fd18871a1c81c790cad0cbc51abc6ea6382c493b31eb590797ac5473bf8cdfcb7abf1b8307fd0",
+    "signingPriv": {
+      "kty": "EC",
+      "crv": "P-256",
+      "key_ops": [
+        "sign"
+      ],
+      "ext": true,
+      "d": "CHBgxh_O9Tv7t8QwtK9O8QOtf1dYmIc0qzHfBngFg60",
+      "x": "W60PfxIvD9OzPQ0PDeBfI--2r6ouCPjFs4_RiHGhyBw",
+      "y": "eQytDLxRq8bqY4LEk7MetZB5esVHO_jN_Ler8bgwf9A"
+    },
+    "exchangePub": "04797fc8f6ed0ad448ce9fab9cb1229ace34f261eb1e1d7adec47eb4d8f509b2f9b2e66f217f5b4c0b91bcfd64793735b1fde43b8850011532b544c5261b69da25",
+    "exchangePriv": {
+      "kty": "EC",
+      "crv": "P-256",
+      "key_ops": [
+        "deriveKey",
+        "deriveBits"
+      ],
+      "ext": true,
+      "d": "Gk9xghs3yDzuiaJvSPIzIZjB94J0vGx61tCaBE9iS04",
+      "x": "eX_I9u0K1EjOn6ucsSKazjTyYeseHXrexH602PUJsvk",
+      "y": "suZvIX9bTAuRvP1keTc1sf3kO4hQARUytUTFJhtp2iU"
+    }
+  },
+  "bobSigningThumbprint": "b6a553bcf5d89df8484af9cbb641306421729c74939e74286a0916d4d052cf68",
+  "aliceSigningThumbprint": "df3f6064bf76b4b3c5d38564d24e110c5d882499833aeaa371312c32c0dea1a0",
+  "challengePin": "940172",
+  "challengePinDigest": "af8bc8fcdfbd0c738e0fe5e9e81f718485078878867a358c05275b4a9bc7175a",
+  "preKeyBundleProto": "0001080112e20100010a40074fa59f8069afb9ee10d77fa6ea96a74ca4c39b843b9ec528b9fdbc019ba5f5c6d57e12472ec81a5ac1d647d8427ba195aa9459c2f9d55a951bf0db83d59ec11240aac7b827341b0880d9a4a1a60f4146fb2713c21ea8b6227da5883a90da3d1de3f07d61dcd0777296e6f60f30a53bbc0169b9ae4379bed8e57cbe00123c5135021a40046b1a9146664fdc2a5a1954e41075031f8df83ed958f864206530cf7c23d1e970aff63ecc308b2947ee0855fd7a2c28f1de3111c5e3d14c4ee2267044d8b97b2218323032362d30332d33305430353a35313a31382e3236325a1a460001080012405b764a5223c363ee953e42ca8528892f6348ec15bfccc703369d9ff4890b34421b0e16b788db416c31037bf8f2e6392164823737d22bc76d0c640842e598c26e228801000108001240f9d6762be560e2c9f3a1c62fd4c34e8e4470b29ebeda8a37ec689c9c45b031d92d65961bc7fd290203ebeb1955a00b2f46fb076d86d649778bf2268d08ef34781a40452e60823128b8214483ffc9ea2710cb1aee2c3641a1f002996abb7b09296e4650386ded3e27fb5111c5d0429f37adc2e2c179bb0fa5f5228103677ed0183a2a",
+  "aliceEphemeralPub": "04fbed0d0afec05a3470a1daf7ce8fa0887e62e2d6b101a385e6dd35794eca73f4b4f36a2c17ecdea75740e54eba359823c4a938cdd87ab8e5a59b4ec8468f4cf1",
+  "aliceEphemeralPriv": {
+    "kty": "EC",
+    "crv": "P-256",
+    "key_ops": [
+      "deriveKey",
+      "deriveBits"
+    ],
+    "ext": true,
+    "d": "09bjwjSgVHwGLcGHKQXcKMAngY0TyH1BG5R8QtNp5Fo",
+    "x": "--0NCv7AWjRwodr3zo-giH5i4taxAaOF5t01eU7Kc_Q",
+    "y": "tPNqLBfs3qdXQOVOujWYI8SpOM3YerjlpZtOyEaPTPE"
+  },
+  "x3dh": {
+    "dh1": "285c3fc91744f6c797b7da4581dd1f0011b78a04f8eadd321f9ec89dba84045e",
+    "dh2": "d67b5ed4b4f4d283f6dd46d92598b31fc9d2cead0bd4ae92c6de906f636e1821",
+    "dh3": "10a35e330661937db062d76f65217e09c38af75bc1c9ef7ea6b04db483a9f212",
+    "dh4": "7bb508e93bb922084a34b2a06b95d1f06bde6010b9d715637b92dd6ce2b38083",
+    "km": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff285c3fc91744f6c797b7da4581dd1f0011b78a04f8eadd321f9ec89dba84045ed67b5ed4b4f4d283f6dd46d92598b31fc9d2cead0bd4ae92c6de906f636e182110a35e330661937db062d76f65217e09c38af75bc1c9ef7ea6b04db483a9f2127bb508e93bb922084a34b2a06b95d1f06bde6010b9d715637b92dd6ce2b38083",
+    "hkdfPRK": "127e6e036f065fd9efd8e3b4b5e92fed957f9e3bf0d1a096e2592adaf0db87bd",
+    "rootKey": "709536b5ed38742d46070a7aac08df795976841874183e432a778ef8da65bd85",
+    "dhSymmetryCheck": true
+  },
+  "chainKDF": {
+    "inputChainKey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "cipherKey": "790519613efaec118e63904e01475b9543b9a15c61070227d877418c8cca415e",
+    "nextChainKey": "e3593f75e832b460cfc9cdea5a65902f94d9213060090c0e00a5a74306389e2e"
+  },
+  "messageKeys": {
+    "hkdfPRK": "2e1364755d9db610baf28385f37affab6ea4208c400de24eefdcf6da6315029b",
+    "aesKey": "4dd616cd97d08a45d6b831789bd01abf47f1f41cb019ceee789d834bb43a688c",
+    "hmacKey": "6856d65f125af23bd80d748cdc3a2e5803e3add557b5af47fcb0ef589c45c398",
+    "ivMaterial": "26dc72731e31b5c155eb5048dbed8ffa6c0d83d4177240e5ecb011b3906c2792",
+    "iv": "26dc72731e31b5c155eb5048dbed8ffa"
+  },
+  "aesCBC": {
+    "plaintext": "Hello Bob",
+    "ciphertext": "450f22f5480bc9e5a262fc7bcc3077b3"
+  },
+  "roundTrip": {
+    "alicePlaintext": "Hello from Alice",
+    "aliceEncryptedProto": "00010802100018002240fbed0d0afec05a3470a1daf7ce8fa0887e62e2d6b101a385e6dd35794eca73f4b4f36a2c17ecdea75740e54eba359823c4a938cdd87ab8e5a59b4ec8468f4cf12ae20100010a405bad0f7f122f0fd3b33d0d0f0de05f23efb6afaa2e08f8c5b38fd18871a1c81c790cad0cbc51abc6ea6382c493b31eb590797ac5473bf8cdfcb7abf1b8307fd01240797fc8f6ed0ad448ce9fab9cb1229ace34f261eb1e1d7adec47eb4d8f509b2f9b2e66f217f5b4c0b91bcfd64793735b1fde43b8850011532b544c5261b69da251a403e85f5169466941a62dfb4c4a3bfcbd5a67a69df101b9be26bd45480753b20a11f2bb9f10a2ee3b37c4e6ae810b46c1e2bbc1c8981bbb74f9345f9ee6ed117692218323032362d30332d33305430353a35313a31382e3236355a32d20100010a405bad0f7f122f0fd3b33d0d0f0de05f23efb6afaa2e08f8c5b38fd18871a1c81c790cad0cbc51abc6ea6382c493b31eb590797ac5473bf8cdfcb7abf1b8307fd0126a00010a40fbed0d0afec05a3470a1daf7ce8fa0887e62e2d6b101a385e6dd35794eca73f4b4f36a2c17ecdea75740e54eba359823c4a938cdd87ab8e5a59b4ec8468f4cf11000180022201ccbdc7811d428b097d8bb822022ff10dafc15f9d033a0cb486313efd908fccf1a20e89e828a6384db36111fb82cd987d2c37bd274877bafe1b8b8789a402a64a252",
+    "aliceEncryptedSize": 516,
+    "bobDecrypted": "Hello from Alice",
+    "success": true,
+    "bobReplyProto": "00010a40074fa59f8069afb9ee10d77fa6ea96a74ca4c39b843b9ec528b9fdbc019ba5f5c6d57e12472ec81a5ac1d647d8427ba195aa9459c2f9d55a951bf0db83d59ec1125a00010a40f818aaa323470ed9bbde0ad2759f275e00388e43d99b9fef2cf615687698a2c9bb712f75b56a1373de113e3ff3c73b58786c4ab4e2b507fb4a48946928635ec31000180122106e19851aa79d797b5f3fa5d499ed9f2e1a2062350ec478c59b16d46aee545b8088c6eddf629b21bb1f8105b4099ae44fda3a",
+    "bobReplySize": 194,
+    "aliceDecryptedReply": "Hello from Bob",
+    "replySuccess": true
+  },
+  "negative": {
+    "tamperedBundleProto": "0001080112e20100010a41074fa59f8069afb9ee10d77fa6ea96a74ca4c39b843b9ec528b9fdbc019ba5f5c6d57e12472ec81a5ac1d647d8427ba195aa9459c2f9d55a951bf0db83d59ec11240aac7b827341b0880d9a4a1a60f4146fb2713c21ea8b6227da5883a90da3d1de3f07d61dcd0777296e6f60f30a53bbc0169b9ae4379bed8e57cbe00123c5135021a40046b1a9146664fdc2a5a1954e41075031f8df83ed958f864206530cf7c23d1e970aff63ecc308b2947ee0855fd7a2c28f1de3111c5e3d14c4ee2267044d8b97b2218323032362d30332d33305430353a35313a31382e3236325a1a460001080012405b764a5223c363ee953e42ca8528892f6348ec15bfccc703369d9ff4890b34421b0e16b788db416c31037bf8f2e6392164823737d22bc76d0c640842e598c26e228801000108001240f9d6762be560e2c9f3a1c62fd4c34e8e4470b29ebeda8a37ec689c9c45b031d92d65961bc7fd290203ebeb1955a00b2f46fb076d86d649778bf2268d08ef34781a40452e60823128b8214483ffc9ea2710cb1aee2c3641a1f002996abb7b09296e4650386ded3e27fb5111c5d0429f37adc2e2c179bb0fa5f5228103677ed0183a2a",
+    "wrongIdentitySignature": "0001080112c80100010a407d36fdb6ca56228dc9f0f5d95c1b2208bc170689ae30591d4f3394d123ddc399e06ff32694138f2fa120856bf26bc2330c44c3281b98a43721c66a8d59f672d412406fd1dd2fb4888007747c5bb8d8c4f137c48f829c130b6f3e4121ea8a5e84d604233f6e358922296eb8a9cfd1cdf26589aaa2d26dd327c91058e09a6256859e171a409b56a6e41227737dc73def7cc4205e436050bd5dcce2059f1ca597669be70b8b70a610835d7e7048f7857d0812da1fa31c3dd7540b7192b44902cab21fdab14b1a002288010001080112401e3c3a63c6c16fc17b13206c3dffd1a88f6d878ab5e89651fc81acc8da29903b985379d4b10f0c7c7b15d7f29e6bc81aab1ce1f92a2fc5751a10ed7ee286fc041a4063f2678382893923f0f273bfc9cabb4eb1c6ce49416d7b04a2fe1f064d472b0ec3dc2a703da56e27176386c2a6ce73c09a08f588bcccc73968cf53356ad7e275",
+    "wrongPreKeySignature": "0001080112c80100010a40b1dca43fa2a920dd8882a3e4d5f2f8876e32bcc62d63082e85e1b2f87074772206641f7fdd1fea216bd279cb602351e0280f999a72c54d2d40ca192875cb4fe41240cbc78e1e0af61c1966e8a604bb55fa6468f96f9b3f32e883b9d49e3d8a9f5d43284aacb0cfbecf6db6d664a504c975e870a2aa20bc3d8b07eb627862c5362b661a40fd97642ea246beb1e73e3aede401e2fb6010f799e4791524a1dd918cf84f9a2d3d1448af677a29b8fd96449577e3f3264cec06ac7b2f83a9af944a13c8d9efcf228801000108011240ab2c101850cfb9a31127f26a4fd139ba2de720b6d2043721b10a306f69fb64a5d9dba92130e9236f35cb6c66e89ec25b9662170b2f5e82528e57b08fe92ccf7a1a409814ad399b735642f36bc2f22bf297f31e48e1fd6ab2a965398188e090aaa1300419169d0ec692fa21557db58ba3701ddc5cfc74c66539cdb28f8d8dbddbc07c"
+  }
+}

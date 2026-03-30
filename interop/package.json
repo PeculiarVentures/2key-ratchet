@@ -1,0 +1,15 @@
+{
+  "name": "2key-ratchet-interop",
+  "private": true,
+  "scripts": {
+    "generate": "node generate_vectors.js",
+    "test": "node generate_vectors.js && cd ../go && go test -v -run TestInterop"
+  },
+  "dependencies": {
+    "@peculiar/webcrypto": "^1.5.0",
+    "@webcrypto-local/client": "^1.10.7",
+    "2key-ratchet": "1.0.18",
+    "pvtsutils": "^1.3.5",
+    "ws": "^8.20.0"
+  }
+}

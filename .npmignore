@@ -23,3 +23,6 @@ ts*.json
 
 # MAC OS
 .DS_Store
+# Go implementation
+go
+interop
