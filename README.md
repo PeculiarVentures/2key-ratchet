@@ -59,7 +59,12 @@ __NOTE:__ You will also have to import [tslib](https://github.com/Microsoft/tsli
 
 ### Go
 
-The Go implementation depends on `golang.org/x/crypto` (HKDF) and `github.com/gorilla/websocket` (WebSocket server). No CGo, no protobuf code generation.
+| Name              | Size    | Description                                              |
+|-------------------|---------|----------------------------------------------------------|
+| go/ (source)      | 101 Kb  | Protocol, wire format, server, and action dispatch       |
+| go/ (test)        |  62 Kb  | Unit, interop, and live integration tests                |
+
+Dependencies: `golang.org/x/crypto` (HKDF) and `github.com/gorilla/websocket` (WebSocket server). No CGo, no protobuf code generation.
 
 
 ## TypeScript
