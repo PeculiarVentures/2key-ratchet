@@ -438,6 +438,38 @@
   </div>
 </div>
 
+
+  <!-- Code panel -->
+  <div class="code-section">
+    <div class="code-toggle" id="codeToggle" onclick="toggleCode()">
+      <span class="code-toggle-title">How it works in code</span>
+      <span class="code-toggle-sub">full program for both sides · ~50 lines total · active block highlights as demo runs</span>
+      <span class="code-chevron" id="codeChevron">▼</span>
+    </div>
+    <div class="code-panels-wrap" id="codePanels">
+      <div class="code-col" id="alice-code-col">
+        <div class="code-col-header">
+          <span class="code-col-dot alice"></span>
+          <span class="code-col-name alice">ALICE</span>
+          <span class="code-col-role">initiator — sends the PreKeyMessage</span>
+        </div>
+        <div class="code-scroll" id="alice-code-scroll">
+          <pre class="code-src" id="alice-code-src"></pre>
+        </div>
+      </div>
+      <div class="code-col" id="bob-code-col">
+        <div class="code-col-header">
+          <span class="code-col-dot bob"></span>
+          <span class="code-col-name bob">BOB</span>
+          <span class="code-col-role">responder — receives and replies</span>
+        </div>
+        <div class="code-scroll" id="bob-code-scroll">
+          <pre class="code-src" id="bob-code-src"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <!-- Approval modal -->
 <div class="approval-overlay" id="approvalModal">
   <div class="approval-modal">
