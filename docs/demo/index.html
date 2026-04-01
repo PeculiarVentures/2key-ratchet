@@ -8211,10 +8211,12 @@ function rejectSession() {
 
 const SRC = {
   alice: [
-    { div: 'Import' },
-    { id: 'a-import', code: `import { Identity, AsymmetricRatchet,` },
+    { div: 'Setup — load library and destructure' },
+    { id: 'a-import', code: `// Browser: load 2key-ratchet.js (UMD bundle)` },
+    { id: 'a-import', code: `// Node:    const DKeyRatchet = require('2key-ratchet');` },
+    { id: 'a-import', code: `const { Identity, AsymmetricRatchet,` },
     { id: 'a-import', code: `  PreKeyBundleProtocol, PreKeyMessageProtocol,` },
-    { id: 'a-import', code: `  MessageSignedProtocol } from '2key-ratchet';` },
+    { id: 'a-import', code: `  MessageSignedProtocol } = DKeyRatchet;` },
 
     { div: 'Generate identity (once — persist to storage)' },
     { id: 'a-gen', code: `// signingKey (ECDSA) + exchangeKey (ECDH) + preKeys` },
@@ -8256,10 +8258,10 @@ const SRC = {
   ],
 
   bob: [
-    { div: 'Import' },
-    { id: 'b-import', code: `import { Identity, AsymmetricRatchet,` },
+    { div: 'Setup — load library and destructure' },
+    { id: 'b-import', code: `const { Identity, AsymmetricRatchet,` },
     { id: 'b-import', code: `  PreKeyBundleProtocol, PreKeyMessageProtocol,` },
-    { id: 'b-import', code: `  MessageSignedProtocol } from '2key-ratchet';` },
+    { id: 'b-import', code: `  MessageSignedProtocol } = DKeyRatchet;` },
 
     { div: 'Generate identity and publish PreKeyBundle' },
     { id: 'b-gen', code: `const bob = await Identity.create(2, 1, 10);` },
@@ -8339,7 +8341,7 @@ function renderSrc(who) {
   let html = '';
   for (const line of SRC[who]) {
     if (line.div !== undefined) {
-      html += `<span class="code-section-comment">${line.div}</span>`;
+      html += `<span class="code-section-comment">${line.div}</span>\n`;
       continue;
     }
     const idAttr = line.id ? ` data-lid="${line.id}"` : '';
