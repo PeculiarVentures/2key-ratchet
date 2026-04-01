@@ -119,6 +119,9 @@ export interface IJsonAsymmetricRatchet {
     counter: number;
     rootKey: CryptoKey;
     steps: IJsonDHRatchetStep[];
+    id?: number;
+    remotePreKeyId?: number;
+    remotePreKeySignedId?: number;
 }
 
 export interface IAsymmetricRatchetOptions {
@@ -385,6 +388,9 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
             remoteIdentity: await this.remoteIdentity.signingKey.thumbprint(),
             rootKey: this.rootKey,
             steps: await this.steps.toJSON(),
+            id: this.id,
+            remotePreKeyId: this.remotePreKeyId,
+            remotePreKeySignedId: this.remotePreKeySignedId,
         } as IJsonAsymmetricRatchet;
     }
 
@@ -392,6 +398,9 @@ export class AsymmetricRatchet extends EventEmitter implements IJsonSerializable
         this.currentRatchetKey = await Curve.ecKeyPairFromJson(obj.ratchetKey);
         this.counter = obj.counter;
         this.rootKey = obj.rootKey;
+        if (obj.id !== undefined) { this.id = obj.id; }
+        if (obj.remotePreKeyId !== undefined) { this.remotePreKeyId = obj.remotePreKeyId; }
+        if (obj.remotePreKeySignedId !== undefined) { this.remotePreKeySignedId = obj.remotePreKeySignedId; }
 
         for (const step of obj.steps) {
             this.currentStep = await DHRatchetStep.fromJSON(step);

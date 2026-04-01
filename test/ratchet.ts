@@ -2,6 +2,7 @@ import { assert } from "chai";
 import { Convert } from "pvtsutils";
 import { AsymmetricRatchet } from "../src/asym_ratchet";
 import { Secret } from "../src/crypto";
+import { Identity } from "../src/data";
 import { MessageSignedProtocol, PreKeyBundleProtocol, PreKeyMessageProtocol } from "../src/protocol";
 import { ReceivingRatchet, SendingRatchet } from "../src/sym_ratchet";
 import { createIdentity, createPreKeyBundle } from "./helper";
@@ -170,6 +171,58 @@ context("Ratchet", () => {
                             }
                         });
                     });
+            });
+
+            it("toJSON/fromJSON round-trip preserves id, remotePreKeyId, remotePreKeySignedId, and currentStep", async () => {
+                const aliceIdentity = await Identity.create(1, 1, 1);
+                const bobIdentity   = await Identity.create(2, 1, 1);
+
+                // Build Bob's bundle
+                const bundle = new PreKeyBundleProtocol();
+                await bundle.identity.fill(bobIdentity);
+                bundle.registrationId = bobIdentity.id;
+                bundle.preKeySigned.id  = 0;
+                bundle.preKeySigned.key = bobIdentity.signedPreKeys[0].publicKey;
+                await bundle.preKeySigned.sign(bobIdentity.signingKey.privateKey);
+                bundle.preKey.id  = 0;
+                bundle.preKey.key = bobIdentity.preKeys[0].publicKey;
+                const bundleAb = await bundle.exportProto();
+
+                // Alice creates session
+                const bundleIn    = await PreKeyBundleProtocol.importProto(bundleAb);
+                const aliceRatchet = await AsymmetricRatchet.create(aliceIdentity, bundleIn);
+
+                // Encrypt one message so currentStep is populated
+                const msgProto = await aliceRatchet.encrypt(Convert.FromUtf8String("hello"));
+                const msgAb    = await msgProto.exportProto();
+
+                // Bob creates session from the PreKeyMessage
+                const incoming    = await PreKeyMessageProtocol.importProto(msgAb);
+                const bobRatchet  = await AsymmetricRatchet.create(bobIdentity, incoming);
+                await bobRatchet.decrypt(incoming.signedMessage);
+
+                // Round-trip Bob's ratchet through toJSON/fromJSON
+                const json           = await bobRatchet.toJSON();
+                const restoredRatchet = await AsymmetricRatchet.fromJSON(
+                    bobIdentity,
+                    bobRatchet.remoteIdentity,
+                    json,
+                );
+
+                // Fields that were previously lost must now be restored
+                assert.equal(restoredRatchet.id,                bobRatchet.id,                "id");
+                assert.equal(restoredRatchet.remotePreKeyId,     bobRatchet.remotePreKeyId,    "remotePreKeyId");
+                assert.equal(restoredRatchet.remotePreKeySignedId, bobRatchet.remotePreKeySignedId, "remotePreKeySignedId");
+                assert.ok(restoredRatchet.currentStep,           "currentStep must not be empty");
+                assert.ok(restoredRatchet.currentStep.sendingChain || restoredRatchet.currentStep.receivingChain,
+                    "currentStep must have at least one chain");
+
+                // Restored ratchet must still decrypt Alice's next message
+                const msg2Proto = await aliceRatchet.encrypt(Convert.FromUtf8String("second message"));
+                const msg2Ab    = await msg2Proto.exportProto();
+                const incoming2 = await MessageSignedProtocol.importProto(msg2Ab);
+                const plaintext = await restoredRatchet.decrypt(incoming2);
+                assert.equal(Convert.ToUtf8String(plaintext), "second message", "decryption after restore");
             });
 
         });
