@@ -9,3 +9,10 @@ cSpell.json
 
 # MAC OS
 .DS_Store
+
+# Go
+/go/bin/
+
+# Interop
+/interop/node_modules
+/interop/package-lock.json
