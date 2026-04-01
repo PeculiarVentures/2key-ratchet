@@ -7855,6 +7855,9 @@ function setStatus(msg, type='idle') {
 }
 
 function updateState(who, sess) {
+  // rootKey is a non-extractable HMAC CryptoKey — show session id instead
+  const rkEl = document.getElementById(who+'-rk');
+  if (rkEl) { rkEl.textContent = 'sess #'+sess.id; rkEl.classList.add('live'); }
   const chainEl = document.getElementById(who+'-chain').childNodes[0];
   chainEl.textContent = `tx:${sess.counter??'—'} `;
   const epochEl = document.getElementById(who+'-epoch');
