@@ -7,6 +7,8 @@
 
 [![NPM](https://nodei.co/npm/2key-ratchet.png)](https://nodei.co/npm/2key-ratchet/)
 
+**[▶ Interactive Browser Demo](https://peculiarventures.github.io/2key-ratchet/demo/)** — runs entirely in your browser, no server required.
+
 
 `2key-ratchet` is an implementation of a [Double Ratchet](https://whispersystems.org/docs/specifications/doubleratchet/) protocol and [X3DH](https://whispersystems.org/docs/specifications/x3dh) in TypeScript utilizing WebCrypto. 
 
