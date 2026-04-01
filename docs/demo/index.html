@@ -7825,13 +7825,18 @@ tslib/tslib.es6.js:
 // =============================================================
 // 2key-ratchet Demo
 // =============================================================
-// DKeyRatchet is set as a global by the inlined IIFE bundle above.
+
+// =============================================================================
+// 2key-ratchet Demo — Application
+// =============================================================================
 //
-// Key API facts:
-//   identity.signingKey.publicKey  → ECPublicKey (library class, NOT CryptoKey)
-//   ECPublicKey.thumbprint()       → Promise<string>  ← use this for PIN/display
-//   ECPublicKey.serialize()        → ArrayBuffer      ← use this for raw hex display
-//   DO NOT use crypto.subtle.exportKey() on these — they may be non-extractable
+// DKeyRatchet is the global set by the inlined IIFE bundle.
+//
+// Key API notes:
+//   identity.signingKey.publicKey  → ECPublicKey (library wrapper, not CryptoKey)
+//   ECPublicKey.thumbprint()       → Promise<string>  (SHA-256 hex of raw key)
+//   ECPublicKey.serialize()        → ArrayBuffer      (raw key bytes)
+//   DO NOT call crypto.subtle.exportKey() on these — keys are non-extractable
 
 const {
   Identity,
@@ -7841,118 +7846,141 @@ const {
   MessageSignedProtocol,
 } = DKeyRatchet;
 
-// ── State ──────────────────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────────────────────
 let S = {
-  aliceId: null, bobId: null,
-  aliceSess: null, bobSess: null,
-  epochCount: 0, lastSender: null, sessionPIN: null,
+  aliceId:    null,
+  bobId:      null,
+  aliceSess:  null,
+  bobSess:    null,
+  epochCount: 0,
+  lastSender: null,
+  sessionPIN: null,
 };
 
-// ── Utilities ──────────────────────────────────────────────────────────────
-const toHex   = b => b ? Array.from(new Uint8Array(b))
-                           .map(x=>x.toString(16).padStart(2,'0')).join('') : '';
-const short   = (b,n=5) => b ? toHex(b).slice(0,n*2)+'…' : '—';
-const ts      = () => new Date().toISOString().slice(11,23);
-const epochCls= n => 'e'+(n%6);
-const esc     = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const sleep   = ms => new Promise(r=>setTimeout(r,ms));
+let wireCount  = 0;
+let bubbleId   = 0;
+let msgCounter = { alice: 0, bob: 0 };
 
-// Session PIN — hash both sides' ECPublicKey thumbprints together
-// ECPublicKey.thumbprint() is the correct API (not crypto.subtle.exportKey)
+// ── Utilities ─────────────────────────────────────────────────────────────────
+const toHex    = b  => b ? Array.from(new Uint8Array(b))
+                            .map(x => x.toString(16).padStart(2,'0')).join('') : '';
+const ts       = () => new Date().toISOString().slice(11, 23);
+const epochCls = n  => 'e' + (n % 6);
+const esc      = s  => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const sleep    = ms => new Promise(r => setTimeout(r, ms));
+
+// Session PIN: SHA-256(thumbprint(alice) + thumbprint(bob))[0..3] → 8 hex chars
+// Uses ECPublicKey.thumbprint() — the correct API for non-extractable keys
 async function computePIN(aliceECPub, bobECPub) {
   const aHex = await aliceECPub.thumbprint();
   const bHex = await bobECPub.thumbprint();
-  const buf  = new TextEncoder().encode(aHex + bHex);
-  const hash = await crypto.subtle.digest('SHA-256', buf);
+  const hash = await crypto.subtle.digest('SHA-256',
+    new TextEncoder().encode(aHex + bHex));
   const b = new Uint8Array(hash);
-  const hi = ((b[0]<<8)|b[1]).toString(16).padStart(4,'0').toUpperCase();
-  const lo = ((b[2]<<8)|b[3]).toString(16).padStart(4,'0').toUpperCase();
+  const hi = ((b[0] << 8) | b[1]).toString(16).padStart(4, '0').toUpperCase();
+  const lo = ((b[2] << 8) | b[3]).toString(16).padStart(4, '0').toUpperCase();
   return hi + lo;
 }
 
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function setStatus(msg, type = 'idle') {
+  document.getElementById('statusText').textContent = msg;
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot' +
+    (type === 'ok' ? ' ok' : type === 'err' ? ' err' : type === 'busy' ? ' busy' : '');
+}
+
 function setPIN(who, pin) {
-  const p = who[0];
-  for (let i=0;i<8;i++) {
-    const el = document.getElementById(p+'pd'+i);
+  const prefix = who[0];
+  for (let i = 0; i < 8; i++) {
+    const el = document.getElementById(prefix + 'pd' + i);
     if (el) { el.textContent = pin[i]; el.classList.add('live'); }
   }
-  const v = document.getElementById(who+'-pin-verified');
+  const v = document.getElementById(who + '-pin-verified');
   if (v) v.style.display = 'block';
 }
 
-function setStatus(msg, type='idle') {
-  document.getElementById('statusText').textContent = msg;
-  const dot = document.getElementById('statusDot');
-  dot.className = 'status-dot'
-    +(type==='ok'?' ok':type==='err'?' err':type==='busy'?' busy':'');
-}
-
 function updateState(who, sess) {
-  // rootKey is a non-extractable HMAC CryptoKey — show session id instead
-  const rkEl = document.getElementById(who+'-rk');
-  if (rkEl) { rkEl.textContent = 'sess #'+sess.id; rkEl.classList.add('live'); }
-  const chainEl = document.getElementById(who+'-chain').childNodes[0];
-  chainEl.textContent = `tx:${sess.counter??'—'} `;
-  const epochEl = document.getElementById(who+'-epoch');
+  // rootKey is a non-extractable HMAC CryptoKey — display session id instead
+  const rkEl = document.getElementById(who + '-rk');
+  if (rkEl) { rkEl.textContent = 'sess #' + sess.id; rkEl.classList.add('live'); }
+
+  const chainEl = document.getElementById(who + '-chain').childNodes[0];
+  chainEl.textContent = `tx:${sess.counter ?? '—'} `;
+
+  const epochEl = document.getElementById(who + '-epoch');
   epochEl.style.display = '';
-  epochEl.textContent   = 'turn '+S.epochCount;
-  epochEl.className     = 'epoch-badge '+epochCls(S.epochCount);
+  epochEl.textContent   = 'turn ' + S.epochCount;
+  epochEl.className     = 'epoch-badge ' + epochCls(S.epochCount);
 }
 
-// ── Wire log ───────────────────────────────────────────────────────────────
-let wireCount = 0;
-function addWireEntry(e) {
-  wireCount++;
-  document.getElementById('wireCount').textContent =
-    wireCount+(wireCount===1?' event':' events');
-  const log = document.getElementById('wireLog');
-  const ph  = log.querySelector('[data-placeholder]');
-  if (ph) ph.remove();
-  const fromA = e.from==='alice';
+// ── Wire log ──────────────────────────────────────────────────────────────────
+function createWireEntry(e) {
+  const fromA = e.from === 'alice';
   const ec    = epochCls(e.epoch);
-  const div   = document.createElement('div');
-  div.className = 'wire-entry';
+
+  // Top row: timestamp, sequence, direction, type, epoch badge, size
   const top = document.createElement('div');
   top.className = 'wire-entry-top';
   top.innerHTML = `
     <span class="wire-ts">${e.ts}</span>
-    <span class="wire-seq">${String(wireCount).padStart(2,'0')}</span>
-    <span class="wire-dir" style="color:${fromA?'var(--alice)':'var(--bob)'}">
-      ${fromA?'A→B':'B→A'}
+    <span class="wire-seq">${String(wireCount).padStart(2, '0')}</span>
+    <span class="wire-dir" style="color:${fromA ? 'var(--alice)' : 'var(--bob)'}">
+      ${fromA ? 'A→B' : 'B→A'}
     </span>
     <span class="wire-type">${e.type}</span>
-    ${e.newEpoch?'<span class="wire-new-epoch">⚡ new DH ratchet step</span>':''}
+    ${e.newEpoch ? '<span class="wire-new-epoch">⚡ new DH ratchet step</span>' : ''}
     <span class="epoch-badge ${ec}" style="display:inline-block">${e.epochLabel}</span>
     <span class="wire-size">${e.size} B</span>`;
-  div.appendChild(top);
-  if (e.fields?.length) {
-    const fr = document.createElement('div'); fr.className='wire-fields';
-    e.fields.forEach(([k,v])=>{
-      const f=document.createElement('span'); f.className='wire-field';
-      f.innerHTML=`<span class="wire-field-k">${k}:</span> ${v}`; fr.appendChild(f);
-    });
-    div.appendChild(fr);
-  }
-  const det = document.createElement('div'); det.className='wire-detail';
-  let hex='';
-  for (const [lbl,val,cls] of (e.hexFields||[]))
-    hex+=`<div class="hex-label">${lbl}</div>`
-        +`<div class="hex-block"><span class="${cls||''}">${val}</span></div>`;
-  det.innerHTML = hex||'<div class="hex-block" style="color:var(--dim)">—</div>';
-  div.appendChild(det);
-  div.addEventListener('click',()=>det.classList.toggle('open'));
-  log.appendChild(div);
+
+  // Field summary row
+  const fields = document.createElement('div');
+  fields.className = 'wire-fields';
+  (e.fields || []).forEach(([k, v]) => {
+    const f = document.createElement('span');
+    f.className = 'wire-field';
+    f.innerHTML = `<span class="wire-field-k">${k}:</span> ${v}`;
+    fields.appendChild(f);
+  });
+
+  // Expandable hex detail
+  const detail = document.createElement('div');
+  detail.className = 'wire-detail';
+  detail.innerHTML = (e.hexFields || []).map(([lbl, val, cls]) =>
+    `<div class="hex-label">${lbl}</div>` +
+    `<div class="hex-block"><span class="${cls || ''}">${val}</span></div>`
+  ).join('') || '<div class="hex-block" style="color:var(--dim)">—</div>';
+
+  const entry = document.createElement('div');
+  entry.className = 'wire-entry';
+  entry.appendChild(top);
+  entry.appendChild(fields);
+  entry.appendChild(detail);
+  entry.addEventListener('click', () => detail.classList.toggle('open'));
+  return entry;
+}
+
+function addWireEntry(e) {
+  wireCount++;
+  document.getElementById('wireCount').textContent =
+    wireCount + (wireCount === 1 ? ' event' : ' events');
+
+  const log = document.getElementById('wireLog');
+  const placeholder = log.querySelector('[data-placeholder]');
+  if (placeholder) placeholder.remove();
+
+  log.appendChild(createWireEntry(e));
   log.scrollTop = log.scrollHeight;
 }
 
-// ── Message bubbles ────────────────────────────────────────────────────────
-let bubbleId = 0;
-function addBubble(who, text, meta) {
-  const c = document.getElementById(who+'-msgs');
-  const em = c.querySelector('.empty-msg'); if(em) em.remove();
-  const ec=epochCls(meta.epoch), bid=++bubbleId;
-  const div=document.createElement('div'); div.className='msg-bubble';
-  div.innerHTML=`
+// ── Message bubbles ───────────────────────────────────────────────────────────
+function createBubble(text, meta) {
+  const ec  = epochCls(meta.epoch);
+  const bid = ++bubbleId;
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.innerHTML = `
     <div class="msg-text">${esc(text)}</div>
     <div class="msg-meta">
       <span class="msg-counter">msg #${meta.counter}</span>
@@ -7960,298 +7988,420 @@ function addBubble(who, text, meta) {
         style="background:var(--${ec}b);color:var(--${ec}c);border-color:var(--${ec}c)">
         turn ${meta.epoch}
       </span>
-      ${meta.newEpoch?'<span class="msg-new-epoch">⚡ new key exchange</span>':''}
+      ${meta.newEpoch ? '<span class="msg-new-epoch">⚡ new key exchange</span>' : ''}
       <span class="msg-expand">▾ details</span>
     </div>
     <div class="msg-details" id="bd${bid}">
-      <div class="detail-row"><span class="detail-key">counter</span><span class="detail-val">${meta.counter}</span></div>
-      <div class="detail-row"><span class="detail-key">timestamp</span><span class="detail-val">${meta.ts}</span></div>
-      <div class="detail-row"><span class="detail-key">wire size</span><span class="detail-val">${meta.size} B</span></div>
+      <div class="detail-row">
+        <span class="detail-key">counter</span>
+        <span class="detail-val">${meta.counter}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-key">timestamp</span>
+        <span class="detail-val">${meta.ts}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-key">wire size</span>
+        <span class="detail-val">${meta.size} B</span>
+      </div>
     </div>`;
-  div.addEventListener('click',()=>div.querySelector('.msg-details').classList.toggle('open'));
-  c.appendChild(div); c.scrollTop=c.scrollHeight;
+
+  bubble.addEventListener('click', () =>
+    bubble.querySelector('.msg-details').classList.toggle('open'));
+  return bubble;
 }
 
-// ── Establish ──────────────────────────────────────────────────────────────
+function addBubble(who, text, meta) {
+  const container = document.getElementById(who + '-msgs');
+  const empty = container.querySelector('.empty-msg');
+  if (empty) empty.remove();
+  container.appendChild(createBubble(text, meta));
+  container.scrollTop = container.scrollHeight;
+}
+
+// ── Session establishment (X3DH) ──────────────────────────────────────────────
+//
+// 2key-ratchet X3DH flow:
+//   1. Each side creates an Identity (signingKey + exchangeKey + preKeys)
+//   2. Bob builds a PreKeyBundleProtocol, serialises it, publishes to key server
+//   3. Alice imports the bundle, calls AsymmetricRatchet.create(aliceId, bundle)
+//      → derives shared root key, ready to encrypt
+//   4. Alice's first encrypt() returns a PreKeyMessageProtocol containing
+//      the X3DH ephemeral material Bob needs to establish his session
+//   5. Bob imports the PreKeyMessage, calls AsymmetricRatchet.create(bobId, msg)
+//      → derives the same root key as Alice
+//   6. Session PIN: SHA-256(thumbprint(alice) + thumbprint(bob))[0..3]
+//      shown as 8 hex chars — verify out-of-band before trusting
+
 async function establish() {
-  setStatus('Generating secp256r1 identity keypairs…','busy');
+  setStatus('Generating secp256r1 identity keypairs…', 'busy');
   document.getElementById('establishBtn').disabled = true;
   document.getElementById('autoBtn').disabled      = true;
-  try {
-    const alice = await Identity.create(1,1,10);
-    const bob   = await Identity.create(2,1,10);
-    S.aliceId = alice; S.bobId = bob;
 
-    // Display key thumbprints — ECPublicKey.thumbprint() not exportKey()
-    for (const [who,id] of [['alice',alice],['bob',bob]]) {
+  try {
+    // Step 1 — identities
+    // signingKey / exchangeKey are IECKeyPair; .publicKey is ECPublicKey
+    const alice = await Identity.create(1, 1, 10);
+    const bob   = await Identity.create(2, 1, 10);
+    S.aliceId = alice;
+    S.bobId   = bob;
+
+    // Display identity key thumbprints (ECPublicKey.thumbprint(), not exportKey)
+    for (const [who, id] of [['alice', alice], ['bob', bob]]) {
       const sigThumb  = await id.signingKey.publicKey.thumbprint();
       const exchThumb = await id.exchangeKey.publicKey.thumbprint();
-      const iEl = document.getElementById(who+'-ident');
-      const eEl = document.getElementById(who+'-exch');
-      iEl.textContent = sigThumb.slice(0,12)+'…';  iEl.classList.add('live');
-      eEl.textContent = exchThumb.slice(0,12)+'…'; eEl.classList.add('live');
+      const iEl = document.getElementById(who + '-ident');
+      const eEl = document.getElementById(who + '-exch');
+      iEl.textContent = sigThumb.slice(0, 12) + '…';  iEl.classList.add('live');
+      eEl.textContent = exchThumb.slice(0, 12) + '…'; eEl.classList.add('live');
     }
 
-    setStatus('Running X3DH key agreement…','busy');
+    setStatus('Running X3DH key agreement…', 'busy');
 
-    // Bob's PreKeyBundle — fill identity, sign the signed pre-key
+    // Step 2 — Bob builds his PreKeyBundle
+    // preKeySigned.id and preKey.id are 0-based array indices into
+    // bob.signedPreKeys[] and bob.preKeys[] respectively
     const bundle = new PreKeyBundleProtocol();
     await bundle.identity.fill(bob);
     bundle.registrationId   = bob.id;
-    bundle.preKeySigned.id  = 0;  // index into bob.signedPreKeys[]
+    bundle.preKeySigned.id  = 0;
     bundle.preKeySigned.key = bob.signedPreKeys[0].publicKey;
     await bundle.preKeySigned.sign(bob.signingKey.privateKey);
-    bundle.preKey.id  = 0;  // index into bob.preKeys[]
+    bundle.preKey.id  = 0;
     bundle.preKey.key = bob.preKeys[0].publicKey;
     const bundleAb = await bundle.exportProto();
 
-    // Alice creates session from Bob's bundle
-    const bundleIn = await PreKeyBundleProtocol.importProto(bundleAb);
+    // Step 3 — Alice derives shared root key from the bundle
+    const bundleIn  = await PreKeyBundleProtocol.importProto(bundleAb);
     S.aliceSess = await AsymmetricRatchet.create(alice, bundleIn);
-    S.epochCount = 0; S.lastSender = null;
+    S.epochCount  = 0;
+    S.lastSender  = null;
 
-    // Wire log entry
-    const sigRaw  = bob.signingKey.publicKey.serialize();
-    const exchRaw = bob.exchangeKey.publicKey.serialize();
-    const spkRaw  = bob.signedPreKeys[0].publicKey.serialize();
+    // Wire log — bundle exchange
     addWireEntry({
-      ts:ts(), from:'bob', type:'PreKeyBundle (X3DH setup)',
-      epoch:0, epochLabel:'setup', newEpoch:false, size:bundleAb.byteLength,
-      fields:[['reg-id',bob.id],['spk-id',1],['size',bundleAb.byteLength+'B']],
-      hexFields:[
-        ['Bob identity signing key (ECDSA secp256r1)',toHex(sigRaw).slice(0,80)+'…','hv-bob'],
-        ['Bob exchange key (ECDH secp256r1)',toHex(exchRaw).slice(0,80)+'…','hv-bob'],
-        ['Signed pre-key (ECDH secp256r1)',toHex(spkRaw).slice(0,80)+'…','hv-warn'],
+      ts: ts(), from: 'bob',
+      type: 'PreKeyBundle (X3DH setup)',
+      epoch: 0, epochLabel: 'setup', newEpoch: false,
+      size: bundleAb.byteLength,
+      fields: [
+        ['reg-id', bob.id],
+        ['spk-id', bundle.preKeySigned.id],
+        ['size',   bundleAb.byteLength + 'B'],
+      ],
+      hexFields: [
+        ['Bob identity signing key (ECDSA secp256r1)',
+          toHex(bob.signingKey.publicKey.serialize()).slice(0, 80) + '…', 'hv-bob'],
+        ['Bob exchange key (ECDH secp256r1)',
+          toHex(bob.exchangeKey.publicKey.serialize()).slice(0, 80) + '…', 'hv-bob'],
+        ['Signed pre-key (ECDH secp256r1)',
+          toHex(bob.signedPreKeys[0].publicKey.serialize()).slice(0, 80) + '…', 'hv-warn'],
       ],
     });
 
-    // PIN — use ECPublicKey.thumbprint() not crypto.subtle.exportKey()
+    // Step 6 — PIN
     const pin = await computePIN(alice.signingKey.publicKey, bob.signingKey.publicKey);
     S.sessionPIN = pin;
-    setPIN('alice', pin); setPIN('bob', pin);
+    setPIN('alice', pin);
+    setPIN('bob',   pin);
 
     highlightCodeLines('establish');
     showApprovalModal(pin);
-    setStatus(`Session established · PIN ${pin.slice(0,4)}-${pin.slice(4)} · X3DH via secp256r1`,'ok');
+    setStatus(
+      `Session established · PIN ${pin.slice(0,4)}-${pin.slice(4)} · X3DH via secp256r1`,
+      'ok'
+    );
     return true;
-  } catch(e) {
-    setStatus('Error: '+e.message,'err');
+
+  } catch (err) {
+    setStatus('Error: ' + err.message, 'err');
     document.getElementById('establishBtn').disabled = false;
     document.getElementById('autoBtn').disabled      = false;
-    console.error('establish():', e);
+    console.error('establish():', err);
     return false;
   }
 }
 
-// ── Send message ───────────────────────────────────────────────────────────
-let msgCounter = {alice:0, bob:0};
+// ── Send message ──────────────────────────────────────────────────────────────
+//
+// 2key-ratchet message flow:
+//   First message from Alice → PreKeyMessageProtocol
+//     Wire: exportProto() → ArrayBuffer
+//     Bob:  PreKeyMessageProtocol.importProto(ab) → proto
+//           AsymmetricRatchet.create(bobId, proto) → session
+//           session.decrypt(proto.signedMessage)   → plaintext
+//
+//   Subsequent messages → MessageSignedProtocol
+//     Wire: exportProto() → ArrayBuffer
+//     Other side: MessageSignedProtocol.importProto(ab) → proto
+//                 session.decrypt(proto)                → plaintext
+//
+//   Each direction change (Alice→Bob or Bob→Alice switch) generates
+//   a fresh ephemeral ECDH keypair — the DH ratchet step.
 
 async function sendMsg(from, text) {
-  const inputEl   = document.getElementById(from+'-input');
+  const inputEl   = document.getElementById(from + '-input');
   const plaintext = text ?? inputEl.value.trim();
   if (!plaintext) return;
   if (!text) inputEl.value = '';
 
-  const sess = from==='alice' ? S.aliceSess : S.bobSess;
-  const to   = from==='alice' ? 'bob'       : 'alice';
-  const nowTs = ts();
+  const sess   = from === 'alice' ? S.aliceSess : S.bobSess;
+  const to     = from === 'alice' ? 'bob'       : 'alice';
+  const nowTs  = ts();
 
-  if (!sess) { setStatus('Error: no session for '+from,'err'); return; }
+  if (!sess) { setStatus('Error: no session for ' + from, 'err'); return; }
 
   try {
-    setStatus(`${from==='alice'?'Alice':'Bob'} encrypting…`,'busy');
-    const plainAb = new TextEncoder().encode(plaintext).buffer;
-    const proto   = await sess.encrypt(plainAb);
-    const wireAb  = await proto.exportProto();
+    setStatus(`${from === 'alice' ? 'Alice' : 'Bob'} encrypting…`, 'busy');
+
+    // Encrypt on the sender's side
+    const plainAb  = new TextEncoder().encode(plaintext).buffer;
+    const proto    = await sess.encrypt(plainAb);
+    const wireAb   = await proto.exportProto();
     const isPreKey = proto instanceof PreKeyMessageProtocol;
     const counter  = msgCounter[from]++;
-    const newEpoch = from!==S.lastSender && S.lastSender!==null;
+
+    // Direction-change = new DH ratchet turn
+    const newEpoch = from !== S.lastSender && S.lastSender !== null;
     if (newEpoch) S.epochCount++;
     const epoch = S.epochCount;
     S.lastSender = from;
 
     addWireEntry({
-      ts:nowTs, from,
-      type: isPreKey?`PreKeyMessage (counter=${counter})`:`Message (counter=${counter})`,
-      epoch, newEpoch, size:wireAb.byteLength,
-      epochLabel: epoch===0?'session setup':newEpoch?`turn ${epoch} · new keys`:`turn ${epoch}`,
-      fields:[['type',isPreKey?'PreKeyMsg':'SignedMsg'],['size',wireAb.byteLength+'B'],['turn',epoch]],
-      hexFields:[['Wire frame (Protobuf)',toHex(wireAb).slice(0,80)+'…',from==='alice'?'hv-alice':'hv-bob']],
+      ts: nowTs, from,
+      type: isPreKey
+        ? `PreKeyMessage (counter=${counter})`
+        : `Message (counter=${counter})`,
+      epoch, newEpoch, size: wireAb.byteLength,
+      epochLabel: epoch === 0 ? 'session setup'
+                : newEpoch   ? `turn ${epoch} · new keys`
+                :               `turn ${epoch}`,
+      fields: [
+        ['type',  isPreKey ? 'PreKeyMsg' : 'SignedMsg'],
+        ['size',  wireAb.byteLength + 'B'],
+        ['turn',  epoch],
+      ],
+      hexFields: [
+        ['Wire frame (Protobuf)',
+          toHex(wireAb).slice(0, 80) + '…',
+          from === 'alice' ? 'hv-alice' : 'hv-bob'],
+      ],
     });
 
     highlightCodeLines('encrypt_' + from);
 
-    // Decrypt on the other side
+    // Decrypt on the receiver's side
     let decoded;
     if (isPreKey) {
-      // Bob creates his session from the first PreKeyMessage
+      // Bob creates his session from the first PreKeyMessage Alice sends
       const incoming = await PreKeyMessageProtocol.importProto(wireAb);
-      if (!S.bobSess)
+      if (!S.bobSess) {
         S.bobSess = await AsymmetricRatchet.create(S.bobId, incoming);
+      }
       const pt = await S.bobSess.decrypt(incoming.signedMessage);
       decoded  = new TextDecoder().decode(pt);
     } else {
       const incoming = await MessageSignedProtocol.importProto(wireAb);
-      const remote   = from==='alice' ? S.bobSess : S.aliceSess;
+      const remote   = from === 'alice' ? S.bobSess : S.aliceSess;
       const pt       = await remote.decrypt(incoming);
       decoded        = new TextDecoder().decode(pt);
     }
 
-    addBubble(to, decoded, {counter, epoch, newEpoch, ts:nowTs, size:wireAb.byteLength});
+    addBubble(to, decoded, { counter, epoch, newEpoch, ts: nowTs, size: wireAb.byteLength });
     highlightCodeLines('decrypt_' + to);
     if (S.aliceSess) updateState('alice', S.aliceSess);
     if (S.bobSess)   updateState('bob',   S.bobSess);
+
     setStatus(
       newEpoch
         ? `⚡ New DH ratchet turn ${epoch} — fresh secp256r1 ephemeral key, root key re-derived`
         : `Delivered · turn ${epoch}`,
       'ok'
     );
-  } catch(e) {
-    setStatus('Error: '+e.message,'err');
-    console.error('sendMsg():', e);
+
+  } catch (err) {
+    setStatus('Error: ' + err.message, 'err');
+    console.error('sendMsg():', err);
   }
 }
 
-// ── Auto demo ──────────────────────────────────────────────────────────────
+// ── Auto demo ─────────────────────────────────────────────────────────────────
 const DEMO_SCRIPT = [
-  ['alice','Hello Bob — turn 0, first message is a PreKeyMessage carrying X3DH material',900],
-  ['alice','Second from Alice — same DH ratchet turn, symmetric chain key advances',900],
-  ['bob',  'Hi Alice — turn 1, new ephemeral secp256r1 keypair, root key re-derived',1200],
-  ['bob',  'Another from Bob — still turn 1, chain advances',900],
-  ['alice','Alice again — turn 2, fresh ECDH exchange',1200],
-  ['bob',  'Final — turn 3, four root key derivations total',1200],
+  ['alice', 'Hello Bob — turn 0, first message is a PreKeyMessage carrying X3DH material', 900],
+  ['alice', 'Second from Alice — same DH ratchet turn, symmetric chain key advances',       900],
+  ['bob',   'Hi Alice — turn 1, new ephemeral secp256r1 keypair, root key re-derived',     1200],
+  ['bob',   'Another from Bob — still turn 1, chain advances',                              900],
+  ['alice', 'Alice again — turn 2, fresh ECDH exchange',                                   1200],
+  ['bob',   'Final — turn 3, four root key derivations total',                             1200],
 ];
 
 async function autoDemo() {
   document.getElementById('autoBtn').disabled      = true;
   document.getElementById('establishBtn').disabled = true;
+
   const ok = await establish();
-  if (!ok) { document.getElementById('autoBtn').disabled=false; return; }
+  if (!ok) { document.getElementById('autoBtn').disabled = false; return; }
+
   approveSession(true);
-  for (const [from,text,delay] of DEMO_SCRIPT) {
+
+  for (const [from, text, delay] of DEMO_SCRIPT) {
     await sleep(delay);
     await sendMsg(from, text);
   }
+
   document.getElementById('autoBtn').disabled = false;
   setStatus(
-    `Auto demo complete — ${S.epochCount} DH ratchet turns, ${wireCount} wire events · type your own messages above`,
+    `Auto demo complete — ${S.epochCount} DH ratchet turns, ${wireCount} wire events ` +
+    `· type your own messages above`,
     'ok'
   );
 }
 
-// ── Reset ──────────────────────────────────────────────────────────────────
+// ── Reset ─────────────────────────────────────────────────────────────────────
 function resetDemo() {
-  S={aliceId:null,bobId:null,aliceSess:null,bobSess:null,epochCount:0,lastSender:null,sessionPIN:null};
-  wireCount=0; bubbleId=0; msgCounter={alice:0,bob:0};
-  for (const who of ['alice','bob']) {
-    for (const k of ['ident','exch','rk']) {
-      const el=document.getElementById(who+'-'+k);
-      if(el){el.textContent='—';el.className='key-val';}
+  S          = { aliceId: null, bobId: null, aliceSess: null, bobSess: null,
+                 epochCount: 0, lastSender: null, sessionPIN: null };
+  wireCount  = 0;
+  bubbleId   = 0;
+  msgCounter = { alice: 0, bob: 0 };
+
+  for (const who of ['alice', 'bob']) {
+    // Clear key display
+    for (const k of ['ident', 'exch', 'rk']) {
+      const el = document.getElementById(who + '-' + k);
+      if (el) { el.textContent = '—'; el.className = 'key-val'; }
     }
-    document.getElementById(who+'-chain').childNodes[0].textContent='— ';
-    const ep=document.getElementById(who+'-epoch'); if(ep) ep.style.display='none';
-    document.getElementById(who+'-input').disabled=true;
-    document.getElementById(who+'-send').disabled=true;
-    document.getElementById(who+'-msgs').innerHTML='<div class="empty-msg">received messages appear here</div>';
-    const v=document.getElementById(who+'-pin-verified'); if(v) v.style.display='none';
-    const p=who[0];
-    for(let i=0;i<8;i++){const pd=document.getElementById(p+'pd'+i);if(pd){pd.textContent='—';pd.classList.remove('live');}}
+    document.getElementById(who + '-chain').childNodes[0].textContent = '— ';
+
+    const epochEl = document.getElementById(who + '-epoch');
+    if (epochEl) epochEl.style.display = 'none';
+
+    // Disable inputs
+    document.getElementById(who + '-input').disabled = true;
+    document.getElementById(who + '-send').disabled  = true;
+
+    // Clear messages
+    document.getElementById(who + '-msgs').innerHTML =
+      '<div class="empty-msg">received messages appear here</div>';
+
+    // Clear PIN
+    const verEl = document.getElementById(who + '-pin-verified');
+    if (verEl) verEl.style.display = 'none';
+    const prefix = who[0];
+    for (let i = 0; i < 8; i++) {
+      const pd = document.getElementById(prefix + 'pd' + i);
+      if (pd) { pd.textContent = '—'; pd.classList.remove('live'); }
+    }
   }
-  document.getElementById('wireLog').innerHTML=
-    '<div data-placeholder style="padding:20px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--dim)">Establish a session to see the protocol wire log</div>';
-  document.getElementById('wireCount').textContent='0 events';
-  document.getElementById('establishBtn').disabled=false;
-  document.getElementById('autoBtn').disabled=false;
+
+  document.getElementById('wireLog').innerHTML =
+    '<div data-placeholder style="padding:20px;text-align:center;' +
+    'font-family:var(--mono);font-size:11px;color:var(--dim)">' +
+    'Establish a session to see the protocol wire log</div>';
+  document.getElementById('wireCount').textContent     = '0 events';
+  document.getElementById('establishBtn').disabled     = false;
+  document.getElementById('autoBtn').disabled          = false;
   document.getElementById('approvalModal').classList.remove('show');
-  document.getElementById('statusDot').className='status-dot';
-  document.getElementById('statusText').textContent='Ready — establish a session or run the auto demo';
+  document.getElementById('statusDot').className       = 'status-dot';
+  document.getElementById('statusText').textContent    =
+    'Ready — establish a session or run the auto demo';
 }
 
-// ── Approval modal ─────────────────────────────────────────────────────────
+// ── Approval modal ────────────────────────────────────────────────────────────
 function showApprovalModal(pin) {
-  const wrap=document.getElementById('modalPinDigits'); wrap.innerHTML='';
-  pin.split('').forEach((ch,i)=>{
-    if(i===4){const s=document.createElement('span');s.className='approval-fp-sep';s.textContent='-';wrap.appendChild(s);}
-    const d=document.createElement('div');d.className='approval-fp-digit';d.textContent=ch;wrap.appendChild(d);
+  const wrap = document.getElementById('modalPinDigits');
+  wrap.innerHTML = '';
+  pin.split('').forEach((ch, i) => {
+    if (i === 4) {
+      const sep = document.createElement('span');
+      sep.className = 'approval-fp-sep';
+      sep.textContent = '-';
+      wrap.appendChild(sep);
+    }
+    const d = document.createElement('div');
+    d.className = 'approval-fp-digit';
+    d.textContent = ch;
+    wrap.appendChild(d);
   });
   document.getElementById('approvalModal').classList.add('show');
-  setStatus("Bob: verify fingerprint matches Alice's display, then approve",'busy');
+  setStatus("Bob: verify fingerprint matches Alice's display, then approve", 'busy');
 }
 
-function approveSession(silent=false) {
+function approveSession(silent = false) {
   document.getElementById('approvalModal').classList.remove('show');
-  for(const who of ['alice','bob']){
-    document.getElementById(who+'-input').disabled=false;
-    document.getElementById(who+'-send').disabled=false;
+  for (const who of ['alice', 'bob']) {
+    document.getElementById(who + '-input').disabled = false;
+    document.getElementById(who + '-send').disabled  = false;
   }
-  document.getElementById('bob-pin-verified').style.display='block';
+  document.getElementById('bob-pin-verified').style.display = 'block';
   highlightCodeLines('pin');
-  if(!silent){
-    const pin=S.sessionPIN;
-    setStatus(`Session approved · PIN: ${pin.slice(0,4)}-${pin.slice(4)} · send messages or run Auto Demo`,'ok');
+  if (!silent) {
+    const pin = S.sessionPIN;
+    setStatus(
+      `Session approved · PIN: ${pin.slice(0,4)}-${pin.slice(4)} · send messages or run Auto Demo`,
+      'ok'
+    );
   }
 }
 
 function rejectSession() {
   document.getElementById('approvalModal').classList.remove('show');
-  setStatus('Session rejected — reset and try again','err');
-  document.getElementById('establishBtn').disabled=false;
-  document.getElementById('autoBtn').disabled=false;
+  setStatus('Session rejected — reset and try again', 'err');
+  document.getElementById('establishBtn').disabled = false;
+  document.getElementById('autoBtn').disabled      = false;
 }
 
-
-// =============================================================
+// =============================================================================
 // CODE PANEL
-// =============================================================
-// SRC defines the code displayed for each side.
-// { id, code } — a code line; id groups related lines for highlighting.
-// { div: label } — a section divider.
-// CODE_HL maps action names → line IDs to highlight.
+// =============================================================================
+//
+// SRC defines the annotated code shown for each side.
+//   { id, code }   — a code line; id groups lines for highlight actions
+//   { div: label } — a section divider
+//
+// CODE_HL maps demo actions → { alice: [ids], bob: [ids] }
 
 const SRC = {
   alice: [
     { div: 'Setup — load library and destructure' },
-    { id: 'a-import', code: `// Browser: load 2key-ratchet.js (UMD bundle)` },
+    { id: 'a-import', code: `// Browser: include 2key-ratchet.js (UMD bundle)` },
     { id: 'a-import', code: `// Node:    const DKeyRatchet = require('2key-ratchet');` },
     { id: 'a-import', code: `const { Identity, AsymmetricRatchet,` },
     { id: 'a-import', code: `  PreKeyBundleProtocol, PreKeyMessageProtocol,` },
     { id: 'a-import', code: `  MessageSignedProtocol } = DKeyRatchet;` },
 
     { div: 'Generate identity (once — persist to storage)' },
-    { id: 'a-gen', code: `// signingKey (ECDSA) + exchangeKey (ECDH) + preKeys` },
+    { id: 'a-gen', code: `// signingKey (ECDSA secp256r1) + exchangeKey (ECDH) + preKeys` },
     { id: 'a-gen', code: `const alice = await Identity.create(` },
     { id: 'a-gen', code: `  1,   // registration id` },
-    { id: 'a-gen', code: `  1,   // signed pre-keys` },
-    { id: 'a-gen', code: `  10   // one-time pre-keys` },
+    { id: 'a-gen', code: `  1,   // signed pre-key count` },
+    { id: 'a-gen', code: `  10   // one-time pre-key count` },
     { id: 'a-gen', code: `);` },
 
     { div: "Build session from Bob's PreKeyBundle" },
-    { id: 'a-sess', code: `// Fetch Bob's published bundle from key server` },
-    { id: 'a-sess', code: `const bundleAb = await fetchBobBundle();` },
+    { id: 'a-sess', code: `const bundleAb = await fetchBobBundle();  // from key server` },
     { id: 'a-sess', code: `const bundle = await PreKeyBundleProtocol.importProto(bundleAb);` },
     { id: 'a-sess', code: `` },
-    { id: 'a-sess', code: `// X3DH: derive root key via ECDH` },
+    { id: 'a-sess', code: `// X3DH: derive shared root key via ECDH` },
     { id: 'a-sess', code: `const session = await AsymmetricRatchet.create(alice, bundle);` },
 
     { div: 'Session fingerprint — verify with Bob out-of-band' },
-    { id: 'a-pin', code: `// ECPublicKey.thumbprint() = SHA-256 of the raw key` },
+    { id: 'a-pin', code: `// ECPublicKey.thumbprint() returns SHA-256 hex of the raw key` },
     { id: 'a-pin', code: `const aThumb = await alice.signingKey.publicKey.thumbprint();` },
-    { id: 'a-pin', code: `const bThumb = await bundle.identity.signingKey.thumbprint();` },
+    { id: 'a-pin', code: `const bThumb = await bundle.preKeySigned.key.thumbprint();` },
     { id: 'a-pin', code: `const hash = await crypto.subtle.digest('SHA-256',` },
     { id: 'a-pin', code: `  new TextEncoder().encode(aThumb + bThumb));` },
     { id: 'a-pin', code: `// → "8A3FC291"  (Bob sees same value — MITM changes it)` },
 
-    { div: 'Encrypt — first message is a PreKeyMessage' },
-    { id: 'a-enc', code: `// First call produces a PreKeyMessageProtocol` },
-    { id: 'a-enc', code: `// carrying the X3DH material Bob needs to create his session.` },
+    { div: 'Encrypt — first message produces a PreKeyMessage' },
+    { id: 'a-enc', code: `// session.encrypt() returns PreKeyMessageProtocol on first call,` },
+    { id: 'a-enc', code: `// MessageSignedProtocol on all subsequent calls.` },
     { id: 'a-enc', code: `const proto = await session.encrypt(` },
-    { id: 'a-enc', code: `  new TextEncoder().encode('Hello Bob').buffer` },
+    { id: 'a-enc', code: `  new TextEncoder().encode(message).buffer` },
     { id: 'a-enc', code: `);` },
     { id: 'a-enc', code: `await sendToBob(await proto.exportProto());` },
 
     { div: "Decrypt Bob's reply" },
-    { id: 'a-dec', code: `// Subsequent messages are MessageSignedProtocol` },
+    { id: 'a-dec', code: `// Bob's replies arrive as MessageSignedProtocol` },
     { id: 'a-dec', code: `const wire = await receiveFromBob();` },
     { id: 'a-dec', code: `const msg = await MessageSignedProtocol.importProto(wire);` },
     { id: 'a-dec', code: `const plain = await session.decrypt(msg);` },
@@ -8266,44 +8416,48 @@ const SRC = {
     { div: 'Generate identity and publish PreKeyBundle' },
     { id: 'b-gen', code: `const bob = await Identity.create(2, 1, 10);` },
     { id: 'b-gen', code: `` },
-    { id: 'b-gen', code: `// Build and sign the bundle for Alice to fetch` },
+    { id: 'b-gen', code: `// Build and sign the bundle` },
     { id: 'b-gen', code: `const bundle = new PreKeyBundleProtocol();` },
     { id: 'b-gen', code: `await bundle.identity.fill(bob);` },
-    { id: 'b-gen', code: `bundle.registrationId = bob.id;` },
-    { id: 'b-gen', code: `bundle.preKeySigned.id  = 0;  // index into signedPreKeys[]` },
+    { id: 'b-gen', code: `bundle.registrationId   = bob.id;` },
+    { id: 'b-gen', code: `bundle.preKeySigned.id  = 0;  // index into bob.signedPreKeys[]` },
     { id: 'b-gen', code: `bundle.preKeySigned.key = bob.signedPreKeys[0].publicKey;` },
     { id: 'b-gen', code: `await bundle.preKeySigned.sign(bob.signingKey.privateKey);` },
-    { id: 'b-gen', code: `bundle.preKey.id  = 0;  // index into preKeys[]` },
+    { id: 'b-gen', code: `bundle.preKey.id  = 0;  // index into bob.preKeys[]` },
     { id: 'b-gen', code: `bundle.preKey.key = bob.preKeys[0].publicKey;` },
-    { id: 'b-gen', code: `publish(await bundle.exportProto()); // send to key server` },
+    { id: 'b-gen', code: `publish(await bundle.exportProto());` },
 
     { div: "Establish session from Alice's first message" },
-    { id: 'b-sess', code: `// Receive Alice's first message — a PreKeyMessageProtocol` },
     { id: 'b-sess', code: `const wire = await receiveFromAlice();` },
+    { id: 'b-sess', code: `` },
+    { id: 'b-sess', code: `// First message is always a PreKeyMessageProtocol` },
     { id: 'b-sess', code: `const incoming = await PreKeyMessageProtocol.importProto(wire);` },
     { id: 'b-sess', code: `` },
-    { id: 'b-sess', code: `// X3DH: decapsulate and derive the same root key as Alice` },
+    { id: 'b-sess', code: `// X3DH: derive same root key as Alice` },
     { id: 'b-sess', code: `const session = await AsymmetricRatchet.create(bob, incoming);` },
+    { id: 'b-sess', code: `` },
+    { id: 'b-sess', code: `// Decrypt the first message via the signedMessage field` },
     { id: 'b-sess', code: `const plain = await session.decrypt(incoming.signedMessage);` },
 
     { div: 'Session fingerprint — must match Alice' },
-    { id: 'b-pin', code: `const aThumb = await incoming.identity.signingKey.thumbprint();` },
+    { id: 'b-pin', code: `const aThumb = await incoming.preKeySigned.key.thumbprint();` },
     { id: 'b-pin', code: `const bThumb = await bob.signingKey.publicKey.thumbprint();` },
     { id: 'b-pin', code: `const hash = await crypto.subtle.digest('SHA-256',` },
     { id: 'b-pin', code: `  new TextEncoder().encode(aThumb + bThumb));` },
     { id: 'b-pin', code: `// → "8A3FC291" — confirm matches Alice before approving` },
 
     { div: "Decrypt Alice's subsequent messages" },
+    { id: 'b-dec', code: `// Subsequent messages are MessageSignedProtocol` },
     { id: 'b-dec', code: `const wire = await receiveFromAlice();` },
     { id: 'b-dec', code: `const msg = await MessageSignedProtocol.importProto(wire);` },
     { id: 'b-dec', code: `const plain = await session.decrypt(msg);` },
 
-    { div: 'Encrypt a reply (triggers new DH ratchet turn)' },
-    { id: 'b-enc', code: `// Each direction change triggers a new ephemeral ECDH keypair.` },
-    { id: 'b-enc', code: `// The new ratchet pub is included in the message so Alice` },
-    { id: 'b-enc', code: `// can advance her ratchet and derive a new root key.` },
+    { div: 'Encrypt a reply (triggers new DH ratchet step)' },
+    { id: 'b-enc', code: `// Each direction change generates a fresh ephemeral ECDH keypair.` },
+    { id: 'b-enc', code: `// The new ratchet key is sent in the message so Alice` },
+    { id: 'b-enc', code: `// can advance her ratchet and re-derive the root key.` },
     { id: 'b-enc', code: `const proto = await session.encrypt(` },
-    { id: 'b-enc', code: `  new TextEncoder().encode('Hi Alice!').buffer` },
+    { id: 'b-enc', code: `  new TextEncoder().encode(reply).buffer` },
     { id: 'b-enc', code: `);` },
     { id: 'b-enc', code: `await sendToAlice(await proto.exportProto());` },
   ],
@@ -8313,25 +8467,31 @@ const CODE_HL = {
   establish:     { alice: ['a-gen', 'a-sess'], bob: ['b-gen', 'b-sess'] },
   pin:           { alice: ['a-pin'],           bob: ['b-pin'] },
   encrypt_alice: { alice: ['a-enc'],           bob: [] },
-  decrypt_alice: { alice: [],                  bob: ['b-dec', 'b-sess'] },
+  decrypt_alice: { alice: [],                  bob: ['b-sess', 'b-dec'] },
   encrypt_bob:   { alice: [],                  bob: ['b-enc'] },
   decrypt_bob:   { alice: ['a-dec'],           bob: [] },
 };
 
+// Minimal syntax highlighter for the code panel
+// Runs after HTML-escaping so handles &quot; for double-quoted strings
 function hlCode(code) {
-  const esc = s => s
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');  // leave ' unescaped — safe in text content
-  let h = esc(code);
-  h = h.replace(/(\/\/.*)/g, '<span class="cmt">$1</span>');
+  const escHtml = s => s
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  let h = escHtml(code);
+  h = h.replace(/(\/\/.*)/g,
+    '<span class="cmt">$1</span>');
   h = h.replace(/('[^']*'|&quot;(?:[^&]|&(?!quot;))*&quot;|`[^`]*`)/g,
     '<span class="str">$1</span>');
   h = h.replace(/\b(async|await|const|let|return|new|import|from|of|true|false|null)\b/g,
     '<span class="kw">$1</span>');
   h = h.replace(/\b(Identity|AsymmetricRatchet|PreKeyBundleProtocol|PreKeyMessageProtocol|MessageSignedProtocol|publish|fetchBobBundle|receiveFromAlice|receiveFromBob|sendToBob|sendToAlice|importProto|exportProto|thumbprint|fill|sign|encrypt|decrypt|create|digest)\b/g,
     '<span class="fn">$1</span>');
-  h = h.replace(/\.([a-zA-Z_][a-zA-Z0-9_]*)/g, '.<span class="prop">$1</span>');
-  h = h.replace(/\b([0-9]+)\b/g, '<span class="num">$1</span>');
+  h = h.replace(/\.([a-zA-Z_][a-zA-Z0-9_]*)/g,
+    '.<span class="prop">$1</span>');
+  h = h.replace(/\b([0-9]+)\b/g,
+    '<span class="num">$1</span>');
   return h;
 }
 
@@ -8366,35 +8526,45 @@ function highlightCodeLines(action) {
   if (!hl) return;
   const wrap = document.getElementById('codePanels');
   if (!wrap) return;
+
+  // Auto-open and render panel on first highlight
   if (!wrap.classList.contains('open')) {
     wrap.classList.add('open');
-    document.getElementById('codeToggle').classList.add('open');
+    const tog = document.getElementById('codeToggle');
+    if (tog) tog.classList.add('open');
     renderSrc('alice');
     renderSrc('bob');
   }
+
   for (const [who, ids] of [['alice', hl.alice], ['bob', hl.bob]]) {
     const pre = document.getElementById(who + '-code-src');
     if (!pre) continue;
-    // Clear previous highlights
-    pre.querySelectorAll('.cl.hl-alice, .cl.hl-bob').forEach(el => {
-      el.classList.remove('hl-alice', 'hl-bob');
-    });
+
+    // Clear previous highlights on this side
+    pre.querySelectorAll('.hl-alice, .hl-bob').forEach(el =>
+      el.classList.remove('hl-alice', 'hl-bob'));
+
     // Apply new highlights
     const cls = who === 'alice' ? 'hl-alice' : 'hl-bob';
     for (const id of ids) {
-      pre.querySelectorAll(`[data-lid="${id}"]`).forEach(el => {
-        el.classList.add(cls);
-      });
+      pre.querySelectorAll(`[data-lid="${id}"]`).forEach(el =>
+        el.classList.add(cls));
     }
+
     // Scroll first highlighted line into view
     const first = pre.querySelector('.hl-alice, .hl-bob');
     if (first) first.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 }
 
-window.establish=establish; window.sendMsg=sendMsg; window.autoDemo=autoDemo;
-window.resetDemo=resetDemo; window.approveSession=approveSession; window.rejectSession=rejectSession;
-
+// ── Expose to HTML onclick handlers ──────────────────────────────────────────
+window.establish      = establish;
+window.sendMsg        = sendMsg;
+window.autoDemo       = autoDemo;
+window.resetDemo      = resetDemo;
+window.approveSession = approveSession;
+window.rejectSession  = rejectSession;
+window.toggleCode     = toggleCode;
 </script>
 </body>
 </html>
