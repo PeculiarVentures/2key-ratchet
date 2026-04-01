@@ -8319,10 +8319,10 @@ const CODE_HL = {
 function hlCode(code) {
   const esc = s => s
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');  // leave ' unescaped — safe in text content
   let h = esc(code);
   h = h.replace(/(\/\/.*)/g, '<span class="cmt">$1</span>');
-  h = h.replace(/(&#39;(?:[^&]|&(?!#39;))*&#39;|&quot;(?:[^&]|&(?!quot;))*&quot;|`[^`]*`)/g,
+  h = h.replace(/('[^']*'|&quot;(?:[^&]|&(?!quot;))*&quot;|`[^`]*`)/g,
     '<span class="str">$1</span>');
   h = h.replace(/\b(async|await|const|let|return|new|import|from|of|true|false|null)\b/g,
     '<span class="kw">$1</span>');
