@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2key-ratchet — Classical Double Ratchet + X3DH Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0d0f14;
+    --surface: #161a24;
+    --surface2:#1c2133;
+    --border:  #252d42;
+    --border2: #2e3a54;
+    --text:    #e2e8f0;
+    --muted:   #8899b5;
+    --dim:     #4a5a78;
+    --mono:    'JetBrains Mono', monospace;
+    --sans:    'DM Sans', sans-serif;
+
+    /* 2key-ratchet theme — teal/cyan instead of pqc blue/green */
+    --alice:     #22d3ee;
+    --alice-dim: rgba(34,211,238,.08);
+    --alice-mid: rgba(34,211,238,.2);
+    --bob:       #f472b6;
+    --bob-dim:   rgba(244,114,182,.08);
+    --bob-mid:   rgba(244,114,182,.2);
+    --warn:      #fbbf24;
+    --ok:        #34d399;
+
+    /* epoch colours — 6 rotating */
+    --e0c:#22d3ee; --e0b:rgba(34,211,238,.15);
+    --e1c:#a78bfa; --e1b:rgba(167,139,250,.15);
+    --e2c:#fb923c; --e2b:rgba(251,146,60,.15);
+    --e3c:#34d399; --e3b:rgba(52,211,153,.15);
+    --e4c:#f472b6; --e4b:rgba(244,114,182,.15);
+    --e5c:#fbbf24; --e5b:rgba(251,191,36,.15);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:var(--sans);
+         font-size:14px; line-height:1.6; min-height:100vh; }
+
+  /* ── header ── */
+  .hdr { background:var(--surface); border-bottom:1px solid var(--border);
+         padding:0 20px; height:48px; display:flex; align-items:center; gap:12px; }
+  .hdr-title { font-family:var(--mono); font-size:13px; font-weight:600;
+               color:var(--alice); letter-spacing:.05em; }
+  .hdr-sub { font-family:var(--mono); font-size:11px; color:var(--muted); }
+  .chips { display:flex; gap:6px; margin-left:auto; }
+  .chip { font-family:var(--mono); font-size:10px; font-weight:600; padding:3px 8px;
+          border-radius:4px; border:1px solid; letter-spacing:.04em; }
+  .chip-c { color:var(--alice); border-color:var(--alice-mid); background:var(--alice-dim); }
+  .chip-s { color:var(--muted); border-color:var(--border); background:var(--surface2); }
+  .hdr-link { font-family:var(--mono); font-size:11px; color:var(--muted);
+              text-decoration:none; padding:4px 8px; border:1px solid var(--border);
+              border-radius:4px; margin-left:8px; }
+  .hdr-link:hover { color:var(--text); border-color:var(--border2); }
+
+  /* ── status bar ── */
+  .status-bar { background:var(--surface); border-bottom:1px solid var(--border);
+                padding:8px 20px; display:flex; align-items:center; gap:10px;
+                font-family:var(--mono); font-size:11px; color:var(--muted); }
+  .status-dot { width:7px; height:7px; border-radius:50%;
+                background:var(--dim); transition:background .3s; flex-shrink:0; }
+  .status-dot.ok   { background:var(--ok); }
+  .status-dot.busy { background:var(--warn); animation:pulse 1s infinite; }
+  .status-dot.err  { background:#f87171; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  #statusText { color:var(--text); }
+  .setup-actions { margin-left:auto; display:flex; gap:8px; }
+  .btn { font-family:var(--mono); font-size:11px; font-weight:600; padding:6px 14px;
+         border-radius:5px; border:none; cursor:pointer; letter-spacing:.04em;
+         transition:all .15s; }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  .btn-auto    { background:var(--surface2); color:var(--alice);
+                 border:1px solid var(--alice-mid); }
+  .btn-auto:hover:not(:disabled) { background:var(--alice-dim); }
+  .btn-primary { background:var(--alice-dim); color:var(--alice);
+                 border:1px solid var(--alice); }
+  .btn-primary:hover:not(:disabled) { background:var(--alice-mid); }
+  .btn-reset   { background:transparent; color:var(--dim);
+                 border:1px solid var(--border); }
+  .btn-reset:hover { color:var(--muted); border-color:var(--border2); }
+
+  /* ── panels grid ── */
+  .panels { display:grid; grid-template-columns:1fr 1fr; gap:1px;
+            background:var(--border); border-bottom:1px solid var(--border); }
+  .panel { background:var(--bg); padding:16px; }
+
+  /* panel header */
+  .panel-hdr { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .peer-dot  { width:8px; height:8px; border-radius:50%; }
+  .peer-dot.alice { background:var(--alice); }
+  .peer-dot.bob   { background:var(--bob); }
+  .peer-name { font-family:var(--mono); font-size:13px; font-weight:600;
+               letter-spacing:.05em; }
+  .peer-name.alice { color:var(--alice); }
+  .peer-name.bob   { color:var(--bob); }
+  .peer-role { font-family:var(--mono); font-size:10px; color:var(--dim);
+               text-transform:uppercase; letter-spacing:.08em; }
+
+  /* session PIN */
+  .pin-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .pin-label { font-family:var(--mono); font-size:10px; color:var(--dim);
+               text-transform:uppercase; letter-spacing:.08em; min-width:80px; }
+  .pin-digits { display:flex; gap:4px; align-items:center; }
+  .pin-d { font-family:var(--mono); font-size:16px; font-weight:600;
+           color:var(--dim); width:22px; text-align:center;
+           transition:color .3s; }
+  .pin-d.live { color:var(--warn); }
+  .pin-sep { font-family:var(--mono); font-size:14px; color:var(--dim); padding:0 2px; }
+  .pin-match { font-family:var(--mono); font-size:10px; color:var(--ok);
+               display:none; }
+  .pin-match.show { display:block; }
+  .pin-tip { font-family:var(--mono); font-size:10px; color:var(--dim); }
+
+  /* key info */
+  .key-grid { display:grid; grid-template-columns:90px 1fr; gap:3px 8px;
+              margin-bottom:12px; }
+  .key-label { font-family:var(--mono); font-size:10px; color:var(--dim);
+               text-transform:uppercase; letter-spacing:.06em; align-self:center; }
+  .key-val   { font-family:var(--mono); font-size:11px; color:var(--muted);
+               transition:color .3s; }
+  .key-val.live { color:var(--text); }
+  .key-val.flash { animation:flash .5s; }
+  @keyframes flash { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .epoch-badge { font-family:var(--mono); font-size:9px; font-weight:600;
+                 padding:1px 5px; border-radius:3px; border:1px solid; display:none; }
+  .e0{color:var(--e0c);background:var(--e0b);border-color:var(--e0c)}
+  .e1{color:var(--e1c);background:var(--e1b);border-color:var(--e1c)}
+  .e2{color:var(--e2c);background:var(--e2b);border-color:var(--e2c)}
+  .e3{color:var(--e3c);background:var(--e3b);border-color:var(--e3c)}
+  .e4{color:var(--e4c);background:var(--e4b);border-color:var(--e4c)}
+  .e5{color:var(--e5c);background:var(--e5b);border-color:var(--e5c)}
+
+  /* compose */
+  .compose { display:flex; gap:8px; margin-bottom:12px; }
+  .msg-input { flex:1; background:var(--surface); border:1px solid var(--border);
+               color:var(--text); font-family:var(--sans); font-size:13px;
+               padding:8px 12px; border-radius:6px; outline:none; }
+  .msg-input:focus { border-color:var(--border2); }
+  .msg-input::placeholder { color:var(--dim); }
+  .btn-send { font-family:var(--mono); font-size:11px; font-weight:600;
+              padding:8px 14px; border-radius:6px; border:none; cursor:pointer;
+              transition:all .15s; }
+  .btn-send.alice { background:var(--alice-dim); color:var(--alice);
+                    border:1px solid var(--alice); }
+  .btn-send.alice:hover:not(:disabled) { background:var(--alice-mid); }
+  .btn-send.bob { background:var(--bob-dim); color:var(--bob);
+                  border:1px solid var(--bob); }
+  .btn-send.bob:hover:not(:disabled) { background:var(--bob-mid); }
+  .btn-send:disabled { opacity:.4; cursor:not-allowed; }
+
+  /* messages */
+  .msgs { min-height:120px; max-height:200px; overflow-y:auto;
+          display:flex; flex-direction:column; gap:8px; }
+  .empty-msg { font-family:var(--mono); font-size:11px; color:var(--dim);
+               text-align:center; padding:20px 0; }
+  .msg-bubble { background:var(--surface); border:1px solid var(--border);
+                border-radius:8px; padding:10px 12px; cursor:pointer; }
+  .msg-text { font-size:13px; color:var(--text); margin-bottom:6px; word-break:break-word; }
+  .msg-meta { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .msg-counter { font-family:var(--mono); font-size:10px; color:var(--dim); }
+  .msg-epoch   { font-family:var(--mono); font-size:9px; font-weight:600;
+                 padding:1px 5px; border-radius:3px; border:1px solid; }
+  .msg-new-epoch { font-family:var(--mono); font-size:9px; color:var(--warn); }
+  .msg-expand  { font-family:var(--mono); font-size:10px; color:var(--dim);
+                 margin-left:auto; }
+  .msg-details { display:none; margin-top:8px; border-top:1px solid var(--border);
+                 padding-top:8px; }
+  .msg-details.open { display:block; }
+  .detail-row { display:grid; grid-template-columns:80px 1fr; gap:4px; margin-bottom:3px; }
+  .detail-key { font-family:var(--mono); font-size:10px; color:var(--dim); }
+  .detail-val { font-family:var(--mono); font-size:10px; color:var(--muted); word-break:break-all; }
+
+  /* wire log */
+  .wire-section { background:var(--surface); border-top:1px solid var(--border);
+                  border-bottom:1px solid var(--border); }
+  .wire-hdr { display:flex; align-items:center; gap:10px; padding:10px 20px;
+              border-bottom:1px solid var(--border); }
+  .wire-title { font-family:var(--mono); font-size:11px; font-weight:600;
+                text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+  .wire-count { font-family:var(--mono); font-size:10px; color:var(--dim);
+                background:var(--surface2); border:1px solid var(--border);
+                padding:1px 7px; border-radius:10px; }
+  .wire-hint  { font-family:var(--mono); font-size:10px; color:var(--dim);
+                margin-left:auto; }
+  .wire-log   { max-height:220px; overflow-y:auto; }
+  .wire-entry { border-bottom:1px solid var(--border); padding:8px 20px; cursor:pointer; }
+  .wire-entry:hover { background:var(--surface2); }
+  .wire-entry-top { display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+                    font-family:var(--mono); font-size:11px; margin-bottom:4px; }
+  .wire-ts   { color:var(--dim); font-size:10px; min-width:88px; }
+  .wire-seq  { color:var(--dim); font-size:10px; min-width:22px; }
+  .wire-dir  { font-weight:600; font-size:11px; }
+  .wire-type { color:var(--muted); }
+  .wire-new-epoch { color:var(--warn); font-size:10px; }
+  .wire-size { color:var(--dim); font-size:10px; margin-left:auto; }
+  .wire-fields { display:flex; gap:12px; flex-wrap:wrap; }
+  .wire-field { font-family:var(--mono); font-size:10px; color:var(--dim); }
+  .wire-field-k { color:var(--muted); }
+  .wire-detail { display:none; padding:8px 0 0; }
+  .wire-detail.open { display:block; }
+  .hex-label { font-family:var(--mono); font-size:10px; color:var(--dim); margin-top:4px; }
+  .hex-block { font-family:var(--mono); font-size:10px; word-break:break-all;
+               padding:4px 8px; background:var(--surface2); border-radius:4px;
+               margin-top:2px; }
+  .hv-alice { color:var(--alice); }
+  .hv-bob   { color:var(--bob); }
+  .hv-warn  { color:var(--warn); }
+
+  /* approval modal */
+  .approval-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7);
+                      z-index:200; align-items:center; justify-content:center;
+                      backdrop-filter:blur(4px); }
+  .approval-overlay.show { display:flex; }
+  .approval-modal { background:var(--surface); border:1px solid var(--border2);
+                    border-radius:12px; padding:28px 32px; max-width:400px; width:90%;
+                    box-shadow:0 24px 80px rgba(0,0,0,.6);
+                    animation:modalIn .2s ease; }
+  @keyframes modalIn { from{opacity:0;transform:scale(.96) translateY(8px)}
+                       to{opacity:1;transform:scale(1) translateY(0)} }
+  .approval-title { font-family:var(--mono); font-size:11px; font-weight:600;
+                    text-transform:uppercase; letter-spacing:.1em;
+                    color:var(--bob); margin-bottom:4px; }
+  .approval-sub { font-size:13px; color:var(--text); margin-bottom:18px;
+                  line-height:1.5; }
+  .approval-fp { background:var(--surface2); border:1px solid var(--border);
+                 border-radius:8px; padding:16px; margin-bottom:18px; text-align:center; }
+  .approval-fp-label { font-family:var(--mono); font-size:10px; color:var(--dim);
+                       text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; }
+  .approval-fp-digits { display:flex; gap:5px; justify-content:center; margin-bottom:8px; }
+  .approval-fp-digit { font-family:var(--mono); font-size:20px; font-weight:600;
+                       color:var(--warn); background:rgba(251,191,36,.1);
+                       border:1px solid rgba(251,191,36,.35); border-radius:5px;
+                       width:30px; height:36px; display:flex; align-items:center;
+                       justify-content:center; }
+  .approval-fp-sep { font-family:var(--mono); font-size:18px; color:var(--dim);
+                     align-self:center; }
+  .approval-fp-note { font-family:var(--mono); font-size:10px; color:var(--dim);
+                      line-height:1.6; }
+  .approval-why { font-size:12px; color:var(--muted); line-height:1.6;
+                  border-left:2px solid var(--border2); padding-left:12px;
+                  margin-bottom:20px; }
+  .approval-why strong { color:var(--text); }
+  .approval-btns { display:flex; gap:8px; }
+  .btn-approve { flex:1; background:var(--bob-dim); color:var(--bob);
+                 border:1px solid var(--bob); font-family:var(--mono);
+                 font-size:12px; font-weight:600; padding:10px; border-radius:6px;
+                 cursor:pointer; transition:all .15s; }
+  .btn-approve:hover { background:var(--bob-mid); }
+  .btn-reject-session { background:transparent; color:var(--muted);
+                        border:1px solid var(--border2); font-family:var(--mono);
+                        font-size:12px; padding:10px 14px; border-radius:6px;
+                        cursor:pointer; transition:all .15s; }
+  .btn-reject-session:hover { color:#f87171; border-color:#f87171; }
+
+  /* scrollbars */
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="hdr">
+  <span class="hdr-title">2key-ratchet</span>
+  <span class="hdr-sub">Classical Double Ratchet + X3DH</span>
+  <div class="chips">
+    <span class="chip chip-c">ECDH secp256r1</span>
+    <span class="chip chip-c">ECDSA secp256r1</span>
+    <span class="chip chip-c">AES-256-GCM</span>
+    <span class="chip chip-s">in-browser · no server</span>
+  </div>
+  <a class="hdr-link" href="https://github.com/PeculiarVentures/2key-ratchet" target="_blank">github ↗</a>
+</div>
+
+<!-- Status bar -->
+<div class="status-bar" id="setupBar">
+  <div class="status-dot" id="statusDot"></div>
+  <span id="statusText">Ready — establish a session or run the auto demo</span>
+  <div class="setup-actions">
+    <button class="btn btn-auto"    id="autoBtn"      onclick="autoDemo()">▶ Auto Demo</button>
+    <button class="btn btn-primary" id="establishBtn" onclick="establish()">Establish Session</button>
+    <button class="btn btn-reset"                     onclick="resetDemo()">reset</button>
+  </div>
+</div>
+
+<!-- Alice + Bob panels -->
+<div class="panels">
+  <!-- Alice -->
+  <div class="panel">
+    <div class="panel-hdr">
+      <div class="peer-dot alice"></div>
+      <span class="peer-name alice">ALICE</span>
+      <span class="peer-role">Initiator</span>
+    </div>
+
+    <div class="pin-row">
+      <span class="pin-label">Session PIN</span>
+      <div class="pin-digits">
+        <span class="pin-d" id="apd0">—</span><span class="pin-d" id="apd1">—</span>
+        <span class="pin-d" id="apd2">—</span><span class="pin-d" id="apd3">—</span>
+        <span class="pin-sep">·</span>
+        <span class="pin-d" id="apd4">—</span><span class="pin-d" id="apd5">—</span>
+        <span class="pin-d" id="apd6">—</span><span class="pin-d" id="apd7">—</span>
+      </div>
+      <span class="pin-tip" id="alice-pin-tip"></span>
+      <span class="pin-match show" id="alice-pin-verified" style="display:none">✓ matches Bob</span>
+    </div>
+
+    <div class="key-grid">
+      <span class="key-label">Identity</span>
+      <span class="key-val" id="alice-ident">—</span>
+      <span class="key-label">Exchange</span>
+      <span class="key-val" id="alice-exch">—</span>
+      <span class="key-label">Root key</span>
+      <span class="key-val" id="alice-rk">—</span>
+      <span class="key-label">Chain</span>
+      <span class="key-val" id="alice-chain">—
+        <span class="epoch-badge" id="alice-epoch"></span>
+      </span>
+    </div>
+
+    <div class="compose">
+      <input class="msg-input" id="alice-input" placeholder="Type a message…" disabled
+             onkeydown="if(event.key==='Enter')sendMsg('alice')">
+      <button class="btn-send alice" id="alice-send" onclick="sendMsg('alice')" disabled>Send →</button>
+    </div>
+    <div class="msgs" id="alice-msgs">
+      <div class="empty-msg">received messages appear here</div>
+    </div>
+  </div>
+
+  <!-- Bob -->
+  <div class="panel">
+    <div class="panel-hdr">
+      <div class="peer-dot bob"></div>
+      <span class="peer-name bob">BOB</span>
+      <span class="peer-role">Responder</span>
+    </div>
+
+    <div class="pin-row">
+      <span class="pin-label">Session PIN</span>
+      <div class="pin-digits">
+        <span class="pin-d" id="bpd0">—</span><span class="pin-d" id="bpd1">—</span>
+        <span class="pin-d" id="bpd2">—</span><span class="pin-d" id="bpd3">—</span>
+        <span class="pin-sep">·</span>
+        <span class="pin-d" id="bpd4">—</span><span class="pin-d" id="bpd5">—</span>
+        <span class="pin-d" id="bpd6">—</span><span class="pin-d" id="bpd7">—</span>
+      </div>
+      <span class="pin-match" id="bob-pin-verified" style="display:none">✓ matches Alice</span>
+    </div>
+
+    <div class="key-grid">
+      <span class="key-label">Identity</span>
+      <span class="key-val" id="bob-ident">—</span>
+      <span class="key-label">Exchange</span>
+      <span class="key-val" id="bob-exch">—</span>
+      <span class="key-label">Root key</span>
+      <span class="key-val" id="bob-rk">—</span>
+      <span class="key-label">Chain</span>
+      <span class="key-val" id="bob-chain">—
+        <span class="epoch-badge" id="bob-epoch"></span>
+      </span>
+    </div>
+
+    <div class="compose">
+      <input class="msg-input" id="bob-input" placeholder="Type a reply…" disabled
+             onkeydown="if(event.key==='Enter')sendMsg('bob')">
+      <button class="btn-send bob" id="bob-send" onclick="sendMsg('bob')" disabled>Send →</button>
+    </div>
+    <div class="msgs" id="bob-msgs">
+      <div class="empty-msg">received messages appear here</div>
+    </div>
+  </div>
+</div>
+
+<!-- Wire log -->
+<div class="wire-section">
+  <div class="wire-hdr">
+    <span class="wire-title">Protocol Wire Log</span>
+    <span class="wire-count" id="wireCount">0 events</span>
+    <span class="wire-hint">click any entry to expand wire bytes</span>
+  </div>
+  <div class="wire-log" id="wireLog">
+    <div style="padding:20px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--dim)">
+      Establish a session to see the protocol wire log
+    </div>
+  </div>
+</div>
+
+<!-- Approval modal -->
+<div class="approval-overlay" id="approvalModal">
+  <div class="approval-modal">
+    <div class="approval-title">🟣 Bob — Incoming Session Request</div>
+    <div class="approval-sub">
+      Alice wants to establish a secure session. Verify the identity fingerprint
+      matches what Alice sees before approving.
+    </div>
+    <div class="approval-fp">
+      <div class="approval-fp-label">Identity Fingerprint · SHA-256(Alice ‖ Bob signing keys)[0..3]</div>
+      <div class="approval-fp-digits" id="modalPinDigits"></div>
+      <div class="approval-fp-note">
+        Both sides computed this from your identity public keys.<br>
+        A man-in-the-middle would produce a <em>different</em> value.
+      </div>
+    </div>
+    <div class="approval-why">
+      <strong>Why this matters:</strong> Unlike pqc-ratchet which uses ML-DSA-65 signatures,
+      2key-ratchet uses ECDSA over secp256r1 to authenticate identity keys. The same
+      trust model applies — verify out-of-band before approving.
+    </div>
+    <div class="approval-btns">
+      <button class="btn-reject-session" onclick="rejectSession()">✕ Reject</button>
+      <button class="btn-approve" onclick="approveSession()">✓ Approve Session</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+// =============================================================
+// 2key-ratchet Demo — Application Code
+// =============================================================
+//
+// Classical Double Ratchet + X3DH using secp256r1 (ECDH/ECDSA)
+// and AES-256-GCM via WebCrypto.  Wire format uses Protobufs.
+//
+// API:
+//   Identity.create(id, signedPreKeys, preKeys)
+//   new PreKeyBundleProtocol() → fill → exportProto() → ArrayBuffer
+//   AsymmetricRatchet.create(identity, bundleOrPreKeyMessage)
+//   ratchet.encrypt(ArrayBuffer) → PreKeyMessageProtocol | MessageSignedProtocol
+//   ratchet.decrypt(MessageSignedProtocol) → ArrayBuffer
+//   proto.exportProto() → ArrayBuffer  (wire serialisation)
+//   PreKeyMessageProtocol.importProto(ab) → proto
+//   MessageSignedProtocol.importProto(ab) → proto
+
+import {
+  Identity,
+  AsymmetricRatchet,
+  PreKeyBundleProtocol,
+  PreKeyMessageProtocol,
+  MessageSignedProtocol,
+} from 'https://esm.sh/2key-ratchet@1.0.18';
+
+// =============================================================
+// STATE
+// =============================================================
+let S = {
+  aliceId:      null,   // Identity
+  bobId:        null,
+  aliceSess:    null,   // AsymmetricRatchet
+  bobSess:      null,
+  epochCount:   0,
+  lastSender:   null,
+  sessionPIN:   null,
+};
+
+// =============================================================
+// HELPERS
+// =============================================================
+const toHex  = b => b ? Array.from(new Uint8Array(b))
+  .map(x => x.toString(16).padStart(2,'0')).join('') : '';
+const short  = (b, n=5) => b ? toHex(b).slice(0, n*2) + '…' : '—';
+const ts     = () => new Date().toISOString().slice(11,23);
+const epochCls = n => 'e' + (n % 6);
+const esc    = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const sleep  = ms => new Promise(r => setTimeout(r, ms));
+
+// Export a CryptoKey's raw bytes for display/fingerprint
+async function exportRaw(key) {
+  try { return await crypto.subtle.exportKey('raw', key); }
+  catch { return null; }
+}
+
+// Session PIN: SHA-256(aliceSigningPub ‖ bobSigningPub)[0..3] → 8 hex chars
+async function computePIN(aliceSigKey, bobSigKey) {
+  const aRaw = await exportRaw(aliceSigKey);
+  const bRaw = await exportRaw(bobSigKey);
+  if (!aRaw || !bRaw) return '00000000';
+  const combined = new Uint8Array(aRaw.byteLength + bRaw.byteLength);
+  combined.set(new Uint8Array(aRaw));
+  combined.set(new Uint8Array(bRaw), aRaw.byteLength);
+  const hash = await crypto.subtle.digest('SHA-256', combined);
+  const b = new Uint8Array(hash);
+  const hi = ((b[0] << 8) | b[1]).toString(16).padStart(4,'0').toUpperCase();
+  const lo = ((b[2] << 8) | b[3]).toString(16).padStart(4,'0').toUpperCase();
+  return hi + lo;
+}
+
+function setPIN(who, pinStr) {
+  const prefix = who[0];
+  for (let i = 0; i < 8; i++) {
+    const el = document.getElementById(prefix + 'pd' + i);
+    if (el) { el.textContent = pinStr[i]; el.classList.add('live'); }
+  }
+  const verEl = document.getElementById(who + '-pin-verified');
+  if (verEl) verEl.style.display = 'block';
+}
+
+// =============================================================
+// UI UPDATES
+// =============================================================
+function setStatus(msg, type='idle') {
+  document.getElementById('statusText').textContent = msg;
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot'
+    + (type==='ok' ? ' ok' : type==='err' ? ' err' : type==='busy' ? ' busy' : '');
+}
+
+function updateState(who, sess) {
+  // Root key — extract raw bytes for display
+  (async () => {
+    const rkEl = document.getElementById(who + '-rk');
+    const raw  = await exportRaw(sess.rootKey);
+    const hex  = raw ? short(raw, 5) : '…';
+    if (rkEl.textContent !== hex) {
+      rkEl.textContent = hex;
+      rkEl.classList.add('live', 'flash');
+      setTimeout(() => rkEl.classList.remove('flash'), 600);
+    }
+  })();
+
+  // Chain counter + epoch badge
+  const chainEl = document.getElementById(who + '-chain').childNodes[0];
+  const tx = sess.counter ?? '—';
+  chainEl.textContent = `tx:${tx} `;
+  const epochEl = document.getElementById(who + '-epoch');
+  epochEl.style.display = '';
+  epochEl.textContent = 'turn ' + S.epochCount;
+  epochEl.className   = 'epoch-badge ' + epochCls(S.epochCount);
+}
+
+// =============================================================
+// WIRE LOG
+// =============================================================
+let wireCount = 0;
+
+function addWireEntry(e) {
+  wireCount++;
+  document.getElementById('wireCount').textContent =
+    wireCount + (wireCount === 1 ? ' event' : ' events');
+
+  const log = document.getElementById('wireLog');
+  const ph  = log.querySelector('div[style*="text-align:center"]');
+  if (ph) ph.remove();
+
+  const fromA = e.from === 'alice';
+  const ec    = epochCls(e.epoch);
+  const div   = document.createElement('div');
+  div.className = 'wire-entry';
+
+  const top = document.createElement('div');
+  top.className = 'wire-entry-top';
+  top.innerHTML = `
+    <span class="wire-ts">${e.ts}</span>
+    <span class="wire-seq">${String(wireCount).padStart(2,'0')}</span>
+    <span class="wire-dir" style="color:${fromA?'var(--alice)':'var(--bob)'}">
+      ${fromA ? 'A→B' : 'B→A'}
+    </span>
+    <span class="wire-type">${e.type}</span>
+    ${e.newEpoch ? '<span class="wire-new-epoch">⚡ new DH ratchet step</span>' : ''}
+    <span class="epoch-badge ${ec}" style="font-size:10px;padding:1px 5px;border-radius:3px;border:1px solid;display:inline-block">
+      ${e.epochLabel}
+    </span>
+    <span class="wire-size">${e.size} B</span>
+  `;
+  div.appendChild(top);
+
+  if (e.fields?.length) {
+    const fr = document.createElement('div');
+    fr.className = 'wire-fields';
+    e.fields.forEach(([k,v]) => {
+      const f = document.createElement('span');
+      f.className = 'wire-field';
+      f.innerHTML = `<span class="wire-field-k">${k}:</span> ${v}`;
+      fr.appendChild(f);
+    });
+    div.appendChild(fr);
+  }
+
+  const det = document.createElement('div');
+  det.className = 'wire-detail';
+  let hex = '';
+  for (const [lbl, val, cls] of (e.hexFields||[])) {
+    hex += `<div class="hex-label">${lbl}</div>`
+         + `<div class="hex-block"><span class="${cls||''}">${val}</span></div>`;
+  }
+  det.innerHTML = hex || '<div class="hex-block" style="color:var(--dim)">—</div>';
+  div.appendChild(det);
+  div.addEventListener('click', () => det.classList.toggle('open'));
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+// =============================================================
+// MESSAGE BUBBLES
+// =============================================================
+let bubbleId = 0;
+
+function addBubble(who, text, meta) {
+  const c = document.getElementById(who + '-msgs');
+  const em = c.querySelector('.empty-msg');
+  if (em) em.remove();
+
+  const ec  = epochCls(meta.epoch);
+  const bid = ++bubbleId;
+  const div = document.createElement('div');
+  div.className = 'msg-bubble';
+  div.innerHTML = `
+    <div class="msg-text">${esc(text)}</div>
+    <div class="msg-meta">
+      <span class="msg-counter">msg #${meta.counter}</span>
+      <span class="msg-epoch ${ec} e${meta.epoch%6}-bg" style="background:var(--e${meta.epoch%6}b);color:var(--e${meta.epoch%6}c);border-color:var(--e${meta.epoch%6}c)">
+        turn ${meta.epoch}
+      </span>
+      ${meta.newEpoch ? '<span class="msg-new-epoch">⚡ new key exchange</span>' : ''}
+      <span class="msg-expand">▾ details</span>
+    </div>
+    <div class="msg-details" id="bd${bid}">
+      <div class="detail-row"><span class="detail-key">counter</span><span class="detail-val">${meta.counter}</span></div>
+      <div class="detail-row"><span class="detail-key">timestamp</span><span class="detail-val">${meta.ts}</span></div>
+      ${meta.size ? `<div class="detail-row"><span class="detail-key">wire size</span><span class="detail-val">${meta.size} B</span></div>` : ''}
+    </div>`;
+  div.addEventListener('click', () =>
+    div.querySelector('.msg-details').classList.toggle('open'));
+  c.appendChild(div);
+  c.scrollTop = c.scrollHeight;
+}
+
+// =============================================================
+// ESTABLISH — X3DH session setup
+// =============================================================
+//
+// 2key-ratchet X3DH flow:
+//  1. Both sides create an Identity (signingKey + exchangeKey + preKeys)
+//  2. Bob builds a PreKeyBundleProtocol from his identity
+//  3. Alice calls AsymmetricRatchet.create(aliceId, bobBundle)
+//     — derives shared root key, produces PreKeyMessageProtocol on first encrypt
+//  4. Alice encrypts first message — this produces a PreKeyMessageProtocol
+//     containing X3DH setup + the encrypted payload
+//  5. Bob calls AsymmetricRatchet.create(bobId, preKeyMessage)
+//     — decapsulates, derives same root key
+//  6. Session PIN: SHA-256(aliceSigningPub ‖ bobSigningPub)[0..3]
+
+async function establish() {
+  setStatus('Generating secp256r1 identity keypairs…', 'busy');
+  document.getElementById('establishBtn').disabled = true;
+  document.getElementById('autoBtn').disabled      = true;
+
+  try {
+    // Step 1 — identities (id, signedPreKeys, preKeys)
+    const alice = await Identity.create(1, 1, 10);
+    const bob   = await Identity.create(2, 1, 10);
+    S.aliceId = alice;
+    S.bobId   = bob;
+
+    // Show identity key thumbprints
+    for (const [who, id] of [['alice', alice], ['bob', bob]]) {
+      const raw  = await exportRaw(id.signingKey.publicKey);
+      const exch = await exportRaw(id.exchangeKey.publicKey);
+      const identEl = document.getElementById(who + '-ident');
+      const exchEl  = document.getElementById(who + '-exch');
+      identEl.textContent = short(raw, 5);
+      identEl.classList.add('live');
+      exchEl.textContent  = short(exch, 5);
+      exchEl.classList.add('live');
+    }
+
+    setStatus('Running X3DH key agreement…', 'busy');
+
+    // Step 2 — Bob's PreKeyBundle
+    const bundle = new PreKeyBundleProtocol();
+    await bundle.identity.fill(bob);
+    bundle.registrationId = bob.id;
+    bundle.preKeySigned.id  = 1;
+    bundle.preKeySigned.key = bob.signedPreKeys[0].publicKey;
+    await bundle.preKeySigned.sign(bob.signingKey.privateKey);
+    // Add unsigned pre-key
+    if (bob.preKeys.length > 0) {
+      bundle.preKey.id  = 1;
+      bundle.preKey.key = bob.preKeys[0].publicKey;
+    }
+    const bundleAb = await bundle.exportProto();
+
+    // Step 3 — Alice creates session from Bob's bundle
+    const bundleImported = await PreKeyBundleProtocol.importProto(bundleAb);
+    const aliceSess = await AsymmetricRatchet.create(alice, bundleImported);
+    S.aliceSess   = aliceSess;
+    S.epochCount  = 0;
+    S.lastSender  = null;
+
+    // Wire log — PreKeyBundle exchange
+    addWireEntry({
+      ts: ts(), from: 'bob',
+      type: 'PreKeyBundle (X3DH)',
+      epoch: 0, epochLabel: 'setup', newEpoch: false, size: bundleAb.byteLength,
+      fields: [
+        ['reg-id',    bob.id],
+        ['spk-id',    1],
+        ['bundle-sz', bundleAb.byteLength + 'B'],
+      ],
+      hexFields: [
+        ['Bob identity signing pub (ECDSA secp256r1)',
+          short(await exportRaw(bob.signingKey.publicKey), 20), 'hv-bob'],
+        ['Bob exchange pub (ECDH secp256r1)',
+          short(await exportRaw(bob.exchangeKey.publicKey), 20), 'hv-bob'],
+        ['Signed pre-key (ECDH secp256r1)',
+          short(await exportRaw(bob.signedPreKeys[0].publicKey), 20), 'hv-warn'],
+      ],
+    });
+
+    // Session PIN
+    const pin = await computePIN(
+      alice.signingKey.publicKey,
+      bob.signingKey.publicKey
+    );
+    S.sessionPIN = pin;
+    setPIN('alice', pin);
+    setPIN('bob',   pin);
+
+    // Show approval modal — Bob must verify PIN before messaging
+    document.getElementById('setupBar').style.cssText = '';
+    showApprovalModal(pin);
+
+    setStatus(
+      `Session established · PIN: ${pin.slice(0,4)}-${pin.slice(4)}`
+      + ' · secp256r1 ECDH root key derived via X3DH', 'ok'
+    );
+    return true;
+
+  } catch(e) {
+    setStatus('Error: ' + e.message, 'err');
+    document.getElementById('establishBtn').disabled = false;
+    document.getElementById('autoBtn').disabled      = false;
+    console.error('establish():', e);
+    return false;
+  }
+}
+
+// =============================================================
+// SEND MESSAGE
+// =============================================================
+//
+// 2key-ratchet encrypt/decrypt flow:
+//   First message from Alice → PreKeyMessageProtocol (contains X3DH material)
+//   Bob imports it → creates session → decrypts signedMessage portion
+//   Subsequent messages → MessageSignedProtocol
+//   Each direction change = new DH ratchet step (new secp256r1 ephemeral key)
+
+let msgCounter = { alice: 0, bob: 0 };
+
+async function sendMsg(from, text) {
+  const inputEl   = document.getElementById(from + '-input');
+  const plaintext = text ?? inputEl.value.trim();
+  if (!plaintext) return;
+  if (!text) inputEl.value = '';
+
+  const sess   = from === 'alice' ? S.aliceSess : S.bobSess;
+  const to     = from === 'alice' ? 'bob'       : 'alice';
+  const nowTs  = ts();
+
+  try {
+    setStatus(`${from.charAt(0).toUpperCase() + from.slice(1)} encrypting…`, 'busy');
+
+    const plainAb  = new TextEncoder().encode(plaintext).buffer;
+    const proto    = await sess.encrypt(plainAb);
+    const wireAb   = await proto.exportProto();
+
+    // Direction-change = new DH ratchet turn
+    const newEpoch = from !== S.lastSender && S.lastSender !== null;
+    if (newEpoch) S.epochCount++;
+    const epoch = S.epochCount;
+    S.lastSender = from;
+
+    const isPreKey = proto instanceof PreKeyMessageProtocol;
+    const counter  = msgCounter[from]++;
+
+    addWireEntry({
+      ts: nowTs, from,
+      type: isPreKey
+        ? `PreKeyMessage (counter=${counter})`
+        : `Message (counter=${counter})`,
+      epoch, newEpoch, size: wireAb.byteLength,
+      epochLabel: epoch === 0 ? 'session setup'
+                : newEpoch   ? `turn ${epoch} · new keys`
+                :               `turn ${epoch}`,
+      fields: [
+        ['type',     isPreKey ? 'PreKeyMessage' : 'SignedMessage'],
+        ['wire-sz',  wireAb.byteLength + 'B'],
+        ['turn',     epoch],
+      ],
+      hexFields: [
+        ['Wire frame (Protobuf)',
+          toHex(wireAb).slice(0, 80) + '…',
+          from === 'alice' ? 'hv-alice' : 'hv-bob'],
+      ],
+    });
+
+    // Deliver to Bob's side
+    let decoded;
+    if (isPreKey) {
+      // First message: Bob creates session from the PreKeyMessage
+      const incoming = await PreKeyMessageProtocol.importProto(wireAb);
+      if (!S.bobSess) {
+        S.bobSess = await AsymmetricRatchet.create(S.bobId, incoming);
+      }
+      const pt = await S.bobSess.decrypt(incoming.signedMessage);
+      decoded = new TextDecoder().decode(pt);
+    } else {
+      const incoming = await MessageSignedProtocol.importProto(wireAb);
+      const remote   = from === 'alice' ? S.bobSess : S.aliceSess;
+      const pt       = await remote.decrypt(incoming);
+      decoded = new TextDecoder().decode(pt);
+    }
+
+    addBubble(to, decoded, { counter, epoch, newEpoch, ts: nowTs, size: wireAb.byteLength });
+
+    // Refresh state display
+    if (S.aliceSess) updateState('alice', S.aliceSess);
+    if (S.bobSess)   updateState('bob',   S.bobSess);
+
+    setStatus(
+      newEpoch
+        ? `⚡ New DH ratchet turn ${epoch} — fresh secp256r1 ephemeral key, root key re-derived`
+        : `Delivered · turn ${epoch}`,
+      'ok'
+    );
+
+  } catch(e) {
+    setStatus('Error: ' + e.message, 'err');
+    console.error('sendMsg():', e);
+  }
+}
+
+// =============================================================
+// AUTO DEMO
+// =============================================================
+const DEMO_SCRIPT = [
+  ['alice', 'Hello Bob — turn 0, Alice sends first via X3DH PreKeyMessage', 900],
+  ['alice', 'Second message — same DH ratchet turn, symmetric chain advances', 900],
+  ['bob',   'Hi Alice — turn 1, new secp256r1 ephemeral key, root key re-derived', 1200],
+  ['bob',   'Second from Bob — still turn 1, chain key advances', 900],
+  ['alice', 'Alice again — turn 2, fresh ephemeral ECDH keypair', 1200],
+  ['bob',   'Final — turn 3, root key derived four times total via DH ratchet', 1200],
+];
+
+async function autoDemo() {
+  document.getElementById('autoBtn').disabled      = true;
+  document.getElementById('establishBtn').disabled = true;
+
+  const ok = await establish();
+  if (!ok) { document.getElementById('autoBtn').disabled = false; return; }
+
+  // Auto-approve for scripted demo
+  approveSession(true);
+
+  for (const [from, text, delay] of DEMO_SCRIPT) {
+    await sleep(delay);
+    await sendMsg(from, text);
+  }
+
+  document.getElementById('autoBtn').disabled = false;
+  setStatus(
+    `Auto demo complete — ${S.epochCount} DH ratchet turns, ${wireCount} wire events · type your own messages above`,
+    'ok'
+  );
+}
+
+// =============================================================
+// RESET
+// =============================================================
+function resetDemo() {
+  S = { aliceId:null, bobId:null, aliceSess:null, bobSess:null,
+        epochCount:0, lastSender:null, sessionPIN:null };
+  wireCount = 0;
+  bubbleId  = 0;
+  msgCounter = { alice: 0, bob: 0 };
+
+  for (const who of ['alice','bob']) {
+    for (const k of ['ident','exch','rk']) {
+      const el = document.getElementById(who + '-' + k);
+      if (el) { el.textContent = '—'; el.className = 'key-val'; }
+    }
+    document.getElementById(who + '-chain').childNodes[0].textContent = '— ';
+    const ep = document.getElementById(who + '-epoch');
+    if (ep) ep.style.display = 'none';
+    document.getElementById(who + '-input').disabled = true;
+    document.getElementById(who + '-send').disabled  = true;
+    document.getElementById(who + '-msgs').innerHTML =
+      '<div class="empty-msg">received messages appear here</div>';
+    const verEl = document.getElementById(who + '-pin-verified');
+    if (verEl) verEl.style.display = 'none';
+    const prefix = who[0];
+    for (let i = 0; i < 8; i++) {
+      const pd = document.getElementById(prefix + 'pd' + i);
+      if (pd) { pd.textContent = '—'; pd.classList.remove('live'); }
+    }
+  }
+
+  document.getElementById('wireLog').innerHTML = `
+    <div style="padding:20px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--dim)">
+      Establish a session to see the protocol wire log
+    </div>`;
+  document.getElementById('wireCount').textContent = '0 events';
+  document.getElementById('establishBtn').disabled = false;
+  document.getElementById('autoBtn').disabled      = false;
+  document.getElementById('approvalModal').classList.remove('show');
+  document.getElementById('statusDot').className = 'status-dot';
+  document.getElementById('statusText').textContent =
+    'Ready — establish a session or run the auto demo';
+}
+
+// =============================================================
+// APPROVAL MODAL
+// =============================================================
+function showApprovalModal(pin) {
+  const wrap = document.getElementById('modalPinDigits');
+  wrap.innerHTML = '';
+  pin.split('').forEach((ch, i) => {
+    if (i === 4) {
+      const sep = document.createElement('span');
+      sep.className = 'approval-fp-sep'; sep.textContent = '-';
+      wrap.appendChild(sep);
+    }
+    const d = document.createElement('div');
+    d.className = 'approval-fp-digit'; d.textContent = ch;
+    wrap.appendChild(d);
+  });
+  document.getElementById('approvalModal').classList.add('show');
+  setStatus("Bob: verify the fingerprint matches Alice's display, then approve", 'busy');
+}
+
+function approveSession(silent = false) {
+  document.getElementById('approvalModal').classList.remove('show');
+  for (const who of ['alice','bob']) {
+    document.getElementById(who + '-input').disabled = false;
+    document.getElementById(who + '-send').disabled  = false;
+  }
+  const verEl = document.getElementById('bob-pin-verified');
+  if (verEl) verEl.style.display = 'block';
+  if (!silent) {
+    const pin = S.sessionPIN;
+    setStatus(
+      `Session approved · PIN: ${pin ? pin.slice(0,4)+'-'+pin.slice(4) : '…'} · type messages or run Auto Demo`,
+      'ok'
+    );
+  }
+}
+
+function rejectSession() {
+  document.getElementById('approvalModal').classList.remove('show');
+  setStatus('Session rejected — reset and try again', 'err');
+  document.getElementById('establishBtn').disabled = false;
+  document.getElementById('autoBtn').disabled      = false;
+}
+
+// Expose to HTML onclick handlers
+window.establish     = establish;
+window.sendMsg       = sendMsg;
+window.autoDemo      = autoDemo;
+window.resetDemo     = resetDemo;
+window.approveSession = approveSession;
+window.rejectSession  = rejectSession;
+</script>
+</body>
+</html>
