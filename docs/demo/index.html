@@ -8329,8 +8329,8 @@ function toggleCode() {
 function highlightCodeLines(action) {
   const hl = CODE_HL[action];
   if (!hl) return;
-  // Open panel on first highlight
   const wrap = document.getElementById('codePanels');
+  if (!wrap) return;
   if (!wrap.classList.contains('open')) {
     wrap.classList.add('open');
     document.getElementById('codeToggle').classList.add('open');
