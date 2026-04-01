@@ -1,5 +1,11 @@
 # 2key-ratchet
 
+> [!WARNING]
+> **This library is no longer actively maintained.** It is kept available for wire-compatibility reference and to support existing deployed [Fortify](https://github.com/PeculiarVentures/fortify) clients during migration. No new features or security fixes will be made.
+>
+> New projects should use [**pqc-ratchet**](https://github.com/PeculiarVentures/pqc-ratchet), which provides the same Double Ratchet + X3DH protocol with post-quantum security (ML-KEM-768 + ML-DSA-65) and a significantly simpler API. A Go server implementation for migrating off the TypeScript client without breaking wire compatibility is available in the [`go/`](go/) directory.
+
+
 [![CircleCI](https://circleci.com/gh/PeculiarVentures/2key-ratchet.svg?style=svg&circle-token=29f5d4fefececbe5668f0c0858cc583e4e130765)](https://circleci.com/gh/PeculiarVentures/2key-ratchet)
 [![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://raw.githubusercontent.com/PeculiarVentures/2key-ratchet/master/LICENSE.md)
 [![Coverage Status](https://coveralls.io/repos/github/PeculiarVentures/2key-ratchet/badge.svg?branch=master)](https://coveralls.io/github/PeculiarVentures/2key-ratchet?branch=master)
